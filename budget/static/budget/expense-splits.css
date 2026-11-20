@@ -1,0 +1,11 @@
+.split-toggle-field label { display: inline; margin-left: .45rem; }
+.split-toggle-field input { display: inline-block; min-height: auto; width: auto; }
+.split-fields { border: 1px solid var(--border); border-radius: .75rem; margin: 0 0 18px; padding: 16px; }
+.split-fields legend { font-weight: 800; padding: 0 6px; }
+.split-row { align-items: end; border-bottom: 1px solid var(--border); display: grid; gap: 12px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; margin-bottom: 14px; }
+.split-row .field { margin-bottom: 14px; }
+.split-remove { margin-bottom: 14px; }
+[data-split-fields][hidden], .primary-category-field[hidden] { display: none; }
+@media (max-width: 520px) { .split-row { grid-template-columns: 1fr; } .split-remove { justify-self: start; } }
+.split-left { font-weight: 700; margin: 0 0 12px; }
+.split-remove:disabled { cursor: not-allowed; opacity: .55; }

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/docs.css' %}"><script src="{% static 'budget/docs.js' %}" defer></script>{% endblock %}
+{% block title %}{{ chapter.title }} · {{ page_labels.docs|default:'Help' }}{% endblock %}
+{% block content %}
+<header class="pagehead docs-head">
+  <div><h1>{{ page_titles.docs|default:'Help' }}</h1><p>Read the guides or search them.{% if has_admin_chapters %} Chapters marked “Admin” are shown only to administrators.{% endif %}</p></div>
+</header>
+
+<div class="docs-search" role="search" data-index-url="{% url 'docs_search_index' %}">
+  <label for="docs-q" class="visually-hidden">Search the guides</label>
+  <div class="docs-search-box">
+    <svg class="docs-search-icon" aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+    <input id="docs-q" type="search" role="combobox" aria-expanded="false" aria-controls="docs-results" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search the guides (press /)" enterkeyhint="search">
+    <button type="button" class="docs-clear" aria-label="Clear search" hidden>✕</button>
+  </div>
+  <p class="visually-hidden" role="status" aria-live="polite" id="docs-status"></p>
+  <div class="docs-panel" id="docs-panel" hidden>
+    <p class="docs-panel-status" aria-hidden="true"></p>
+    <div class="docs-empty" hidden>
+      <p class="docs-empty-title"></p>
+      <p>Every word must appear in the same section. Try fewer or shorter words, or put an exact phrase in quotes, such as <code>"safe to spend"</code>.</p>
+    </div>
+    <ul id="docs-results" role="listbox" aria-label="Search results"></ul>
+  </div>
+</div>
+
+<div class="docs-layout">
+  <nav class="docs-chapters" aria-label="Guides">
+    <details class="docs-chapter-menu">
+      <summary><span class="docs-current">{{ chapter.title }}</span></summary>
+      {% include 'budget/_docs_chapter_list.html' %}
+    </details>
+    <div class="docs-chapter-list card">
+      <p class="label">Guides</p>
+      {% include 'budget/_docs_chapter_list.html' %}
+    </div>
+  </nav>
+
+  <article class="card docs-article" id="doc-article" data-chapter="{{ chapter.key }}">
+    {% if rendered.toc %}<details class="docs-toc-menu">
+      <summary>On this page</summary>
+      <ul>{% for entry in rendered.toc %}<li class="toc-{{ entry.level }}"><a href="#{{ entry.slug }}">{{ entry.text }}</a></li>{% endfor %}</ul>
+    </details>{% endif %}
+    <div class="doc-body">{% if rendered.html %}{{ rendered.html|safe }}{% else %}<h1>{{ chapter.title }}</h1><p>This guide is not available yet.</p>{% endif %}</div>
+    <nav class="docs-pager" aria-label="Previous and next guide">
+      {% if previous_chapter %}<a class="button" href="{% url 'docs_chapter' previous_chapter.key %}" rel="prev"><span aria-hidden="true">←</span> {{ previous_chapter.title }}</a>{% else %}<span></span>{% endif %}
+      {% if next_chapter %}<a class="button" href="{% url 'docs_chapter' next_chapter.key %}" rel="next">{{ next_chapter.title }} <span aria-hidden="true">→</span></a>{% endif %}
+    </nav>
+  </article>
+
+  <aside class="docs-toc" aria-label="On this page">
+    {% if rendered.toc %}<div class="docs-toc-inner">
+      <p class="label">On this page</p>
+      <ul>{% for entry in rendered.toc %}<li class="toc-{{ entry.level }}"><a href="#{{ entry.slug }}" data-slug="{{ entry.slug }}">{{ entry.text }}</a></li>{% endfor %}</ul>
+    </div>{% endif %}
+  </aside>
+</div>
+{% endblock %}

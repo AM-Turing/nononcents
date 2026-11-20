@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/habits.css' %}?v=1">{% endblock %}
+{% block title %}{{ title }} · {{ household.name }}{% endblock %}
+{% block content %}
+<header class="pagehead"><div><h1>{{ title }}</h1></div></header>
+<form method="post" class="card form-card">{% csrf_token %}
+  {% if form.non_field_errors %}<div class="error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  {% for field in form.visible_fields %}
+  {% if field.name == 'categories' %}
+  <fieldset class="field category-field"><legend>{{ field.label }}</legend>
+    <p class="hint" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{{ field.errors }}
+    <ul class="checks">{% for choice in field %}<li>{{ choice }}</li>{% endfor %}</ul>
+  </fieldset>
+  {% elif field.name == 'include_essential' %}
+  <div class="field check-field">{{ field }} <label for="{{ field.id_for_label }}">Include essential spending</label>{{ field.errors }}</div>
+  {% else %}
+  <div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<small id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}{{ field.errors }}</div>
+  {% endif %}
+  {% endfor %}
+  <div class="form-actions"><button type="submit" class="primary">Save view</button><a class="button" href="{% url 'habits' %}">Cancel</a></div>
+</form>
+{% if habit_view %}
+<form method="post" action="{% url 'habit_view_delete' habit_view.pk %}" class="card form-card delete-card">{% csrf_token %}
+  <h2>Delete view</h2><p>Deleting this view does not change any transactions.</p>
+  <button type="submit" class="danger-button">Delete view</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="pagehead"><div><p class="eyebrow"><a href="{% url 'statements' %}">Statements</a></p><h1>Which account is which?</h1></div></header>
+<section class="card form-card" aria-labelledby="map-heading">
+  <h2 id="map-heading">Match each bank account to an app account</h2>
+  <p>This is asked once; the app remembers the last 4 digits of each bank account number.</p>
+  <form method="post">{% csrf_token %}
+    {% for row in rows %}<div class="field">
+      <label for="account_{{ row.index }}">{{ row.section.account_label }} <small>{{ row.section.lines|length }} row{{ row.section.lines|length|pluralize }} · ending balance ${{ row.section.closing_balance|floatformat:"2g" }}</small></label>
+      <select id="account_{{ row.index }}" name="account_{{ row.index }}" required>
+        <option value="">Choose…</option>
+        {% for account in accounts %}<option value="{{ account.pk }}"{% if row.account and row.account.pk == account.pk %} selected{% endif %}>{{ account.name }}</option>{% endfor %}
+        <option value="skip">Don't import this account</option>
+      </select>
+    </div>{% endfor %}
+    <div class="form-actions"><button type="submit" class="button primary">Import statement</button><a class="button" href="{% url 'statement_upload' %}">Start over</a><button type="submit" name="cancel" value="1" formnovalidate>Cancel</button></div>
+  </form>
+</section>
+{% endblock %}

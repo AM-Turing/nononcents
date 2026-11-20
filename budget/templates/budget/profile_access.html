@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/application-admin.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><a href="{{ return_url }}">← Back</a><h1>Manage {{ profile.name }}</h1><p>Select every user who should be able to choose this profile when signing in.</p></div></header>
+<section class="card form-card">
+  {% if form.non_field_errors %}<div class="error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <fieldset class="membership-options">
+      <legend>Users with access</legend>
+      {% for choice in form.users %}<label>{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>{% empty %}<p>No users are available.</p>{% endfor %}
+    </fieldset>
+    {{ form.users.errors }}
+    <p class="muted">At least one administrator must retain access. The profile selector uses these memberships immediately.</p>
+    <div class="form-actions"><button class="primary" type="submit">Save profile access</button><a class="button" href="{{ return_url }}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

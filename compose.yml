@@ -1,0 +1,66 @@
+# NoNonCents: the web app and PostgreSQL. Nothing else, and no external networks.
+# Settings come from .env (copy .env.example, or run ./start.sh which does it for you).
+name: ${COMPOSE_PROJECT_NAME:-nononcents}
+
+services:
+  web:
+    build:
+      context: .
+    image: nononcents-web:${APP_VERSION:-latest}
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # Bound to this computer only by default. Change WEB_BIND in .env to publish elsewhere
+      # (for example 0.0.0.0:8000), ideally behind an HTTPS reverse proxy.
+      - "${WEB_BIND:-127.0.0.1:8000}:8000"
+    volumes:
+      # Secret-free backup status written by scripts/backup.sh; read-only for the admin alert.
+      - ${BACKUP_STATUS_DIR:-${BACKUP_DIR:-./backups}/status}:/var/lib/nononcents/backup-status:ro
+      # Optional "Back up now" button in Admin; see scripts/backup-request.sh.
+      - ${BACKUP_REQUEST_DIR:-${BACKUP_DIR:-./backups}/requests}:/var/lib/nononcents/backup-requests
+    # Lets the optional AI analysis reach a model server on this computer (host.docker.internal)
+    # on Linux too; Docker Desktop on macOS and Windows provides it already.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    init: true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks: [frontend, database]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+  db:
+    image: postgres:17.12-alpine
+    # Only what Postgres needs; the rest of .env (Django secret key etc.) stays out of this container.
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nononcents}
+      POSTGRES_USER: ${POSTGRES_USER:-nononcents}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (run ./start.sh to create it)}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [database]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+networks:
+  frontend: {}
+  database:
+    internal: true
+volumes:
+  postgres_data: {}

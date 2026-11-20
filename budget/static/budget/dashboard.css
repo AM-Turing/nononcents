@@ -1,0 +1,60 @@
+.low-balance { color: var(--danger); }
+.funding-alert { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 16px; margin-bottom: 16px; border: 2px solid var(--danger); border-left-width: 8px; border-radius: .8rem; background: var(--surface); }
+.funding-alert p { margin: 4px 0 0; }
+.alert-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.alert-actions form { margin: 0; }
+.current-period { margin-bottom: 16px; }
+.mobile-quick-actions { display: none; margin-bottom: 16px; }
+.comparison-card { display: flex; flex-direction: column; }
+.comparison-cards h2 { font-size: 1.15rem; margin: .35rem 0 1rem; }
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; margin: 0 0 16px; }
+.metric-grid div { min-width: 0; }
+.metric-grid dt { color: var(--sub); font-size: .82rem; }
+.metric-grid dd { font-size: 1.25rem; font-weight: 800; margin: .2rem 0 0; overflow-wrap: break-word; }
+.card-note { border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; margin-top: auto; padding-top: 12px; }
+.period-summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; }
+.period-summary dl { display: flex; gap: 26px; flex-wrap: wrap; }
+.period-summary dl div { display: flex; flex-direction: column; }
+.period-summary dd { font-weight: 800; font-size: 1.2rem; margin: 0; }
+.spending-habits { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 18px; }
+.spending-habits h3 { margin-bottom: 0; }
+.chart-layout { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; align-items: center; gap: 28px; margin-top: 16px; }
+.chart-layout .pie-chart { max-width: 220px; }
+.chart-legend { list-style: none; margin: 0; padding: 0; }
+.chart-legend li { display: grid; grid-template-columns: 16px 1fr auto; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.swatch { width: 14px; height: 14px; border: 1px solid var(--strong); border-radius: 3px; }
+@media (max-width: 640px) { .funding-alert { align-items: stretch; flex-direction: column; } .alert-actions > * { flex: 1; } .alert-actions button, .alert-actions a { width: 100%; } .chart-layout { grid-template-columns: 1fr; } .pie { margin: auto; } .mobile-quick-actions { display: block; } .desktop-quick-actions { display: none; } }
+
+.until-payday { margin-bottom: 16px; }
+.until-payday h2 { font-size: 1.15rem; margin: 0 0 .6rem; }
+.until-payday h2 small { display: inline; font-weight: 400; margin-inline-start: .5rem; }
+.until-payday .status-text { margin: 0 0 .5rem; color: var(--sub); }
+.forecast-detail { margin-top: .4rem; font-size: .9rem; }
+.forecast-detail summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--primary); }
+.forecast-detail ul { padding-inline-start: 1.1rem; margin: .3rem 0; }
+.forecast-detail small { display: inline; }
+.negative { color: var(--danger); }
+
+/* Two reconciling account cards */
+.money-cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.money-card h3 { margin: 0 0 .5rem; }
+.ledger-lines { margin: 0 0 .6rem; }
+.ledger-lines div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.ledger-lines dt { color: var(--sub); }
+.ledger-lines dd { margin: 0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ledger-lines .ledger-total { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 8px; }
+.ledger-lines .ledger-total dt { color: var(--text); font-weight: 700; }
+.ledger-lines .ledger-total dd { font-weight: 800; }
+.ledger-lines small { display: inline; color: var(--sub); }
+.headline { margin: 0 0 .3rem; }
+.headline-label { margin: 0; font-weight: 700; }
+.headline .money { margin: 0; }
+.money-card .forecast-detail .ledger-lines { margin-top: .4rem; }
+.carry-card { grid-column: 1 / -1; }
+.carry-sources { margin-top: .4rem; }
+.card-line { margin: .3rem 0; }
+.next-period { border-top: 1px solid var(--border); margin-top: .8rem; padding-top: .6rem; }
+.next-period p { margin: 0 0 .3rem; }
+.next-period small { display: inline; color: var(--sub); }
+.card-links { margin: .5rem 0 0; font-size: .9rem; }
+.card-links a { display: inline-flex; align-items: center; min-height: 44px; }

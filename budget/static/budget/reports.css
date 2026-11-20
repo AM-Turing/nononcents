@@ -1,0 +1,220 @@
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+.report-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.report-filters label {
+  display: grid;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+.report-filters input {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.date-input-shell {
+  background: var(--bg);
+  border: 1px solid var(--strong);
+  border-radius: .55rem;
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.date-input-shell:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.date-input-shell input:focus-visible { outline: 0; }
+
+.report-filters input::-webkit-date-and-time-value,
+.report-filters input::-webkit-datetime-edit {
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+}
+
+.report-summary-grid {
+  display: grid;
+  gap: 1rem;
+  /* As many columns as fit; one column on a phone. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  margin-bottom: 1rem;
+}
+
+.report-summary-grid .card,
+.report-detail-grid > .card,
+.outlook-grid > .card,
+.chart-grid > .card {
+  height: 100%;
+  min-width: 0;
+}
+
+.report-bluf {
+  border-left: .35rem solid var(--focus);
+  margin-bottom: 1rem;
+}
+
+.report-bluf h2 { margin-top: 0; }
+.report-bluf > p:last-child { font-size: 1.05rem; line-height: 1.7; margin-bottom: 0; }
+
+.outlook-grid,
+.chart-grid {
+  display: grid;
+  gap: 1rem;
+  /* Two side by side only when each card has room; stacked on phones. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  margin-bottom: 1rem;
+}
+
+.report-detail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  margin-bottom: 1rem;
+}
+
+.section-heading {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.section-heading h2 { margin-top: 0; }
+.category-chart-layout { align-items: center; display: grid; gap: 1.5rem; grid-template-columns: minmax(150px, 220px) 1fr; }
+.chart-legend { display: grid; gap: .65rem; list-style: none; margin: 0; padding: 0; }
+.chart-legend li { align-items: center; display: grid; gap: .5rem; grid-template-columns: auto minmax(0, 1fr) auto; }
+.legend-swatch { background: var(--legend-color); border-radius: 50%; display: inline-block; height: .75rem; margin-right: .4rem; width: .75rem; }
+
+.report-table-card { margin-bottom: 1rem; min-width: 0; }
+.table-scroll { overflow-x: auto; max-width: 100%; }
+.report-table-card table,
+.category-cuts table { border-collapse: collapse; width: 100%; }
+.report-table-card th,
+.report-table-card td,
+.category-cuts th,
+.category-cuts td { border-bottom: 1px solid var(--border); padding: .75rem; text-align: left; vertical-align: top; }
+.report-table-card thead th,
+.category-cuts thead th { color: var(--sub); font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; }
+
+.metric-list { display: grid; gap: .7rem; margin: 0; }
+.metric-list div { align-items: baseline; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: .25rem 1rem; justify-content: space-between; padding-bottom: .55rem; }
+.metric-list dt { min-width: 0; }
+.metric-list dt { color: var(--sub); }
+.metric-list dd { font-weight: 800; margin: 0; text-align: right; }
+.negative { color: var(--danger); }
+
+.pace-note { color: var(--sub); font-size: .9rem; margin: .3rem 0; }
+.cut-card { margin-bottom: 1rem; }
+.cut-card .money small { display: block; font-size: .75rem; }
+.cut-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); margin-bottom: 1.5rem; }
+.cut-grid article { background: var(--bg); border: 1px solid var(--border); border-radius: .7rem; padding: 1rem; }
+.cut-grid h3 { margin-top: 0; overflow-wrap: normal; }
+/* Label and amount share a line when they fit; otherwise the amount drops below, never cut. */
+.cut-grid p { display: flex; flex-wrap: wrap; gap: .15rem 1rem; justify-content: space-between; }
+.cut-grid p strong { margin-inline-start: auto; white-space: nowrap; }
+
+.line-chart { overflow: hidden; width: 100%; }
+.line-chart svg { display: block; height: auto; overflow: visible; width: 100%; }
+.line-chart line { stroke: var(--border); stroke-width: 2; }
+.line-chart polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.daily-line,
+.actual-line { stroke: var(--text); stroke-width: 5; }
+.projected-line { stroke: #0072b2; stroke-dasharray: 13 8; stroke-width: 4; }
+.budget-line { stroke: #d55e00; stroke-dasharray: 3 8; stroke-width: 5; }
+.daily-point { fill: var(--surface); stroke: var(--text); stroke-width: 3; }
+.daily-point:hover,
+.daily-point:focus { fill: #ffea00; outline: none; stroke-width: 5; }
+.chart-axis { display: flex; justify-content: space-between; margin: 0; }
+.line-legend { display: flex; flex-wrap: wrap; gap: 1rem; list-style: none; padding: 0; }
+.line-legend span { display: inline-block; height: .35rem; margin-right: .4rem; vertical-align: middle; width: 1.8rem; }
+.actual-key { background: var(--text); }
+.projected-key { background: repeating-linear-gradient(90deg, #0072b2 0 10px, transparent 10px 15px); }
+.budget-key { background: repeating-linear-gradient(90deg, #d55e00 0 3px, transparent 3px 7px); }
+
+.deep-analysis-card h3 { margin-bottom: .35rem; margin-top: 1.35rem; }
+.deep-analysis-card ul { padding-left: 1.3rem; }
+.outlook-settings { margin-bottom: 1rem; }
+.outlook-settings summary { cursor: pointer; font-weight: 800; }
+.outlook-settings form { margin-top: 1rem; }
+.outlook-settings ul { columns: 3; list-style: none; padding: 0; }
+.outlook-settings li { break-inside: avoid; margin: .4rem 0; }
+.outlook-settings input[type="checkbox"] { width: auto; }
+
+@media (max-width: 1199px) {
+  .report-detail-grid { grid-template-columns: 1fr; }
+  .outlook-settings ul { columns: 2; }
+}
+
+@media (max-width: 800px) {
+  .category-chart-layout { grid-template-columns: minmax(130px, 180px) 1fr; }
+}
+
+@media screen and (max-width: 700px) {
+  .pagehead { align-items: stretch; }
+  .page-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .page-actions > * { width: 100%; }
+  .report-filters { grid-template-columns: 1fr; }
+  .report-filters button { width: 100%; }
+  .report-detail-grid { grid-template-columns: 1fr; }
+  .category-chart-layout { grid-template-columns: 1fr; }
+  .pie-chart { margin-inline: auto; max-width: 260px; width: 100%; }
+  .section-heading { display: block; }
+  .outlook-settings ul { columns: 1; }
+  .outlook-settings button,
+  .deep-analysis-card .button,
+  .deep-analysis-card button { width: 100%; }
+  .report-filters label,
+  .report-filters input { min-width: 0; width: 100%; }
+}
+
+@media screen and (max-width: 390px) {
+  .page-actions { grid-template-columns: 1fr; }
+}
+
+@media print {
+  .report-filters,
+  .pagehead .page-actions,
+  .outlook-settings,
+  .deep-analysis-card .button { visibility: hidden; height: 0; min-height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; }
+  .report-summary-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .report-detail-grid,
+  .outlook-grid,
+  .chart-grid { grid-template-columns: 1fr 1fr; }
+  .mobile-outlook-detail { display: block; }
+  section.report-summary-grid.mobile-outlook-detail { display: grid; }
+  .table-scroll { overflow: visible; }
+  .report-table-card table,
+  .category-cuts table { min-width: 0; }
+}
+
+.forecast-detail { margin-top: .4rem; font-size: .9rem; }
+.forecast-detail summary { cursor: pointer; min-height: 32px; color: var(--primary); }
+.forecast-detail ul { padding-inline-start: 1.1rem; margin: .3rem 0; }
+.forecast-detail small { display: inline; }
+.projection-list { list-style: none; padding: 0; margin: 0; }
+.projection-list li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }

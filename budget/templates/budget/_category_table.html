@@ -1,0 +1,12 @@
+<div class="table-wrap manage-table" tabindex="0" aria-label="Scrollable category list">
+  <table>
+    <thead><tr><th>Name</th><th>Essential</th><th class="num">Entries</th><th>Actions</th></tr></thead>
+    <tbody>{% for item in items %}<tr>
+      <td>{{ item.category.name }}</td>
+      <td>{{ item.category.is_essential|yesno:"Yes,No" }}</td>
+      <td class="num">{{ item.count }}</td>
+      <td><div class="row-actions"><a class="button" href="{% url 'category_edit' item.category.pk %}">Edit<span class="visually-hidden"> {{ item.category.name }}</span></a>
+        <form method="post" action="{% url 'category_remove' item.category.pk %}">{% csrf_token %}<button class="warn" type="submit">Remove<span class="visually-hidden"> {{ item.category.name }}</span></button></form></div></td>
+    </tr>{% empty %}<tr><td colspan="4" class="empty">None yet. <a href="{% url 'category_add' %}?kind={{ add_kind }}">Add a {{ add_label }} category</a>.</td></tr>{% endfor %}</tbody>
+  </table>
+</div>

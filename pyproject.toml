@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nononcents"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+  "Django[argon2]==5.2.19",
+  "gunicorn==23.0.0",
+  "psycopg[binary]==3.2.13",
+  "whitenoise==6.12.0",
+  "pypdf==7.1.1",
+  "Markdown==3.9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "django-stubs[compatible-mypy]==5.2.2",
+  "mypy==1.17.1",
+  "pytest==8.4.1",
+  "pytest-django==4.11.1",
+  "ruff==0.12.7",
+]
+
+[tool.setuptools.packages.find]
+include = ["nononcents*", "budget*"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = [".venv", "node_modules"]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+ignore = ["DJ008"]
+
+[tool.ruff.lint.per-file-ignores]
+"budget/migrations/*" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+check_untyped_defs = true
+exclude = ["migrations", "tests"]
+
+[[tool.mypy.overrides]]
+# Python-Markdown ships no type information (budget/guide.py renders the in-app docs).
+module = ["markdown", "markdown.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Form fields are typed as the base Field, so assigning .queryset in __init__ is flagged.
+module = ["budget.forms", "budget.debt_forms", "budget.habit_forms", "budget.admin_scope"]
+disable_error_code = ["attr-defined"]
+
+[[tool.mypy.overrides]]
+# Still disabled here (about 60 errors): the MONEY dict spread into DecimalField in models.py,
+# DatedMoney attributes and a Decimal(object) in views.py. Fixing them is a typing pass of its own.
+module = ["budget.models", "budget.views"]
+disable_error_code = ["arg-type", "attr-defined"]
+
+[tool.django-stubs]
+django_settings_module = "nononcents.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "nononcents.settings"
+python_files = ["test_*.py"]
+addopts = "-q"
+norecursedirs = [".git", ".venv", "node_modules"]

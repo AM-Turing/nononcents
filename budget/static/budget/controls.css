@@ -1,0 +1,62 @@
+.appearance-picker { margin-top: auto; }
+.appearance-label { display: block; color: var(--sub); font-size: .78rem; font-weight: 700; margin-bottom: 6px; text-align: center; }
+.appearance-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.appearance-options button { min-width: 44px; padding: 6px; font-size: 1.3rem; }
+html:not(.dark)[data-theme="light"] .appearance-options button[value="light"],
+html.dark[data-theme="dark"] .appearance-options button[value="dark"],
+html[data-theme="system"] .appearance-options button[value="system"] { border: 2px solid var(--primary); background: var(--muted); }
+.transaction-search { flex: 1 1 280px; }
+.transaction-search input { width: 100%; }
+
+/* Text for screen readers only (for example the item name inside an "Edit" button).
+   Loaded on every page so the hidden text never shows. */
+.visually-hidden,
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* A checkbox and its words on one line; the whole line toggles it. */
+.check-label {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-weight: 600;
+  gap: .6rem;
+  min-height: 44px;
+}
+
+/* "More options" on the expense form, and other collapsible groups */
+.more-options { margin: 0 0 18px; }
+.more-options > summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; color: var(--primary); }
+.more-options[open] > summary { margin-bottom: 8px; }
+
+/* Entry type switcher at the top of each add form */
+.type-switch { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; padding: 0; list-style: none; }
+.type-switch a { align-items: center; border: 1px solid var(--border); border-radius: .55rem; color: var(--text); display: inline-flex; min-height: 44px; padding: 0 14px; text-decoration: none; }
+.type-switch a[aria-current="page"] { background: var(--primary); border-color: var(--primary); color: var(--primaryText); font-weight: 700; }
+
+/* First-run checklist on Home */
+.setup-checklist ol { list-style: none; margin: 0; padding: 0; }
+.setup-checklist li { align-items: center; display: flex; gap: .6rem; min-height: 44px; }
+.setup-checklist li a { align-items: center; display: inline-flex; min-height: 44px; }
+.setup-checklist .tick { flex: 0 0 auto; font-weight: 800; width: 1.5rem; }
+.setup-checklist li.done a { color: var(--sub); text-decoration: line-through; }
+
+/* History filters: collapsed on phones, always shown from 640px */
+.filter-details > summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; color: var(--primary); }
+.filter-details[data-wide] > summary { display: none; }
+
+/* Bare text links get a 44px tap height without looking like buttons. */
+.pagehead > div > a:not(.button),
+.sectionhead > a:not(.button),
+.month-nav > a:not(.button) { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; }
+.cards .card > a.status { display: inline-flex; align-items: center; min-height: 44px; border-color: transparent; padding-inline: 4px; color: var(--primary); text-decoration: underline; }

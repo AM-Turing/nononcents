@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/savings.css' %}">{% endblock %}
+{% block title %}Savings · {{ household.name }}{% endblock %}
+{% block content %}
+<header class="pagehead">
+  <div><h1>{{ page_titles.savings|default:'Savings' }}</h1><p>Organize the Savings balance without creating extra accounts.</p></div>
+  <div class="page-actions"><a class="button primary" href="{% url 'savings_goal_add' %}">Add goal</a><a class="button" href="{% url 'savings_move' %}">Move savings</a></div>
+</header>
+{% if not savings_account %}<div class="notice warning" role="alert">This profile needs an active account with the Savings account type.</div>{% endif %}
+{% if savings_drift %}<div class="notice warning" role="alert"><p>The Savings balance is ${{ savings_balance|floatformat:"2g" }} but ${{ total_allocated|floatformat:"2g" }} is assigned to goals, a difference of {% if savings_drift > 0 %}${{ savings_drift_abs|floatformat:"2g" }} not yet assigned{% else %}${{ savings_drift_abs|floatformat:"2g" }} over-assigned{% endif %}. Nothing has been changed automatically.</p><form method="post" action="{% url 'savings_reconcile' %}">{% csrf_token %}<button class="primary" type="submit">Assign {% if savings_drift < 0 %}-{% endif %}${{ savings_drift_abs|floatformat:"2g" }} to Unallocated Savings</button></form></div>{% endif %}
+<section class="savings-totals" aria-label="Savings totals">
+  <article class="card"><p class="label">Savings balance</p><p class="money">${{ savings_balance|floatformat:"2g" }}</p><small>Worked out from your entries</small></article>
+  <article class="card"><p class="label">Assigned across goals</p><p class="money">${{ total_allocated|floatformat:"2g" }}</p><small>Includes completed and archived goals</small></article>
+  <article class="card"><p class="label">Active priorities</p><p class="money">{{ active_goals|length }}</p><small>The next unfinished goal is always #1</small></article>
+</section>
+
+<section aria-labelledby="active-goals-title">
+  <div class="section-heading"><div><p class="eyebrow">Ordered plan</p><h2 id="active-goals-title">Active goals</h2></div></div>
+  <div class="goal-list">
+    {% for goal in active_goals %}
+    <article class="card goal-card">
+      <div class="goal-heading"><div><span class="priority" aria-label="Priority {{ goal.priority }}">#{{ goal.priority }}</span><h3>{{ goal.name }}</h3></div><p class="money">${{ goal.current_amount|floatformat:"2g" }} <small>of ${{ goal.target_amount|floatformat:"2g" }}</small></p></div>
+      <progress value="{{ goal.progress_percent }}" max="100" aria-label="{{ goal.name }} progress">{{ goal.progress_percent }}%</progress>
+      <p class="goal-progress">{{ goal.progress_percent }}% funded · {% if goal.current_amount >= goal.target_amount %}Ready to complete{% else %}${{ goal.remaining_amount|floatformat:"2g" }} remaining{% endif %}</p>
+      <div class="goal-actions">
+        <a class="button" href="{% url 'savings_goal_edit' goal.pk %}">Edit</a>
+        <form method="post" action="{% url 'savings_goal_action' goal.pk 'up' %}">{% csrf_token %}<button type="submit" title="Move priority up">↑ Up</button></form>
+        <form method="post" action="{% url 'savings_goal_action' goal.pk 'down' %}">{% csrf_token %}<button type="submit" title="Move priority down">↓ Down</button></form>
+        {% if goal.current_amount >= goal.target_amount %}<form method="post" action="{% url 'savings_goal_action' goal.pk 'complete' %}">{% csrf_token %}<button class="primary" type="submit">Mark complete</button></form>{% endif %}
+        {% if not goal.entries.exists %}<form method="post" action="{% url 'savings_goal_action' goal.pk 'delete' %}">{% csrf_token %}<button class="danger" type="submit">Delete</button></form>{% endif %}
+      </div>
+    </article>
+    {% empty %}<article class="card"><p>No active savings goals. Add one to start a new priority.</p></article>{% endfor %}
+    {% if unallocated_goal %}
+    <article class="card goal-card unallocated-card">
+      <div class="goal-heading"><div><span class="priority" aria-hidden="true">—</span><h3>Unallocated Savings</h3></div><p class="money">${{ unallocated_goal.current_amount|floatformat:"2g" }}</p></div>
+      <p class="muted">Savings money not yet assigned to a goal. Move a positive amount into an active goal; a negative amount means the goals hold more than Savings has, which needs review.</p>
+    </article>
+    {% endif %}
+  </div>
+</section>
+
+{% if completed_goals %}<section aria-labelledby="completed-goals-title"><p class="eyebrow">Target reached</p><h2 id="completed-goals-title">Completed goals</h2><div class="goal-list compact-goals">
+  {% for goal in completed_goals %}<article class="card goal-card"><div class="goal-heading"><h3>{{ goal.name }}</h3><p class="money">${{ goal.current_amount|floatformat:"2g" }}</p></div><p>Target ${{ goal.target_amount|floatformat:"2g" }} · Completed {{ goal.completed_at|date:'M j, Y' }}</p><p class="muted">Spend the full allocation to fulfill and archive this goal automatically, or archive it while keeping the money in Savings.</p><div class="goal-actions"><a class="button primary" href="{% url 'expense_add' %}?savings_goal={{ goal.pk }}">Spend fulfilled goal</a><a class="button" href="{% url 'savings_goal_edit' goal.pk %}">Edit</a><form method="post" action="{% url 'savings_goal_action' goal.pk 'archive' %}">{% csrf_token %}<button type="submit">Archive and keep in Savings</button></form></div></article>{% endfor %}
+</div></section>{% endif %}
+
+{% if archived_goals %}<details class="card archived-goals"><summary>Archived goals ({{ archived_goals|length }})</summary><p class="muted">Money remains in Savings only when an archived goal still has an allocation.</p><div class="goal-list compact-goals">
+  {% for goal in archived_goals %}<article class="goal-card"><div class="goal-heading"><h3>{{ goal.name }}</h3><p class="money">${{ goal.current_amount|floatformat:"2g" }}</p></div><p>Target ${{ goal.target_amount|floatformat:"2g" }} · Archived {{ goal.archived_at|date:'M j, Y' }} · {% if goal.current_amount > 0 %}Kept in Savings{% else %}Funds spent{% endif %}</p>{% if goal.current_amount > 0 %}<form method="post" action="{% url 'savings_goal_action' goal.pk 'restore' %}">{% csrf_token %}<button type="submit">Restore access</button></form>{% endif %}</article>{% endfor %}
+</div></details>{% endif %}
+{% endblock %}

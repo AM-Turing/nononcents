@@ -1,0 +1,86 @@
+{% extends 'base.html' %}{% load static %}{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/dashboard.css' %}"><link rel="stylesheet" href="{% static 'budget/charts.css' %}">{% endblock %}{% block content %}
+<header class="pagehead"><div><h1>{{ page_titles.dashboard|default:'Home' }}</h1></div><a class="button primary" href="{% url 'expense_add' %}">＋ Add transaction</a></header>
+{% if setup_checklist %}<section class="card setup-checklist" aria-labelledby="setup-title"><h2 id="setup-title">Set up your budget</h2><p class="muted">Work down this list once. Each step ticks itself when it is done, and the list goes away when all are.</p><ol>{% for step in setup_checklist %}<li{% if step.done %} class="done"{% endif %}><span class="tick" aria-hidden="true">{% if step.done %}✓{% else %}○{% endif %}</span><a href="{{ step.url }}">{{ step.label }}</a>{% if step.done %}<span class="sr-only"> (done)</span>{% endif %}</li>{% endfor %}</ol></section>{% endif %}
+{% if bills_shortage_alert %}<section class="funding-alert" role="alert"><div><strong>Bills funding shortage: ${{ bills_shortage|floatformat:"2g" }}</strong><p>The Bills balance of ${{ bills_balance|floatformat:"2g" }} is not enough to cover ${{ bills_remaining|floatformat:"2g" }} still due this pay period.</p></div><div class="alert-actions"><form method="post" action="{% url 'acknowledge_bills_shortage' %}">{% csrf_token %}<input type="hidden" name="alert_key" value="{{ bills_alert_key }}"><button>Acknowledge</button></form><a class="button primary" href="{% url 'transfer_add' %}?to=bills">Add transfer</a></div></section>{% endif %}
+{% if bill_confirmation_alert_enabled and unconfirmed %}<div class="warning" role="status"><strong>Action needed:</strong> <a href="{% url 'bills' %}#review-confirm">{{ unconfirmed }} bill{{ unconfirmed|pluralize }} {% if unconfirmed == 1 %}needs{% else %}need{% endif %} confirmation</a>.</div>{% endif %}
+{% if period %}<section class="until-payday" aria-labelledby="until-payday-title"><h2 id="until-payday-title">Until payday{% if forecast.available %} <small>{{ forecast.payday }} · {{ forecast.days_until_payday }} day{{ forecast.days_until_payday|pluralize }}</small>{% endif %}</h2>
+{% if forecast.available %}
+<div class="money-cards">
+  <article class="card money-card" aria-labelledby="spending-card-title">
+    <h3 id="spending-card-title" class="label">Spending account</h3>
+    <div class="headline"><p class="headline-label">Safe to spend</p><p class="money{% if forecast.safe_to_spend.amount < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.safe_to_spend.amount %}</p></div>
+    <p class="status-text">{% if forecast.safe_to_spend.amount < 0 %}Short by ${{ forecast.safe_to_spend.amount|cut:'-'|floatformat:"2g" }} before payday{% else %}About {% include 'budget/_signed_money.html' with amount=forecast.per_day.amount %} a day until {{ forecast.payday }}{% endif %}</p>
+    {% if low_balance_alert_enabled and spending_balance < low_balance_threshold %}<p class="danger status">Low balance · below ${{ low_balance_threshold|floatformat:"2g" }}</p>{% endif %}
+    <p class="card-line">This period: spent {% include 'budget/_signed_money.html' with amount=spent %}{% if spending_budget_target > 0 %} of {% include 'budget/_signed_money.html' with amount=spending_budget_target %} target · {% if spending_remaining < 0 %}<span class="negative">over by ${{ spending_remaining|cut:'-'|floatformat:"2g" }}</span>{% else %}${{ spending_remaining|floatformat:"2g" }} left{% endif %}{% endif %}</p>
+    <details class="forecast-detail"><summary>How this is worked out</summary>
+      <dl class="ledger-lines">
+        <div><dt>Spending balance</dt><dd{% if low_balance_alert_enabled and spending_balance < low_balance_threshold %} class="low-balance"{% endif %}>{% include 'budget/_signed_money.html' with amount=spending_balance %}</dd></div>
+        <div><dt>− bills paid from Spending before payday</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.due_this_period.spending_total %}</dd></div>
+        <div><dt>− held for next period</dt><dd>{% include 'budget/_signed_money.html' with amount=held_for_next %}</dd></div>
+        <div class="ledger-total"><dt>= Safe to spend</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.safe_to_spend.amount %}</dd></div>
+      </dl>
+      <p>“Held for next period” is the part of the carry-over that the Bills account cannot cover (see Carry over to next pay period).</p>
+    </details>
+    {% if spending_account %}<p class="card-links"><a href="{% url 'account_reconcile' spending_account.pk %}">Reconcile with bank</a></p>{% endif %}
+  </article>
+  <article class="card money-card" aria-labelledby="bills-card-title">
+    <h3 id="bills-card-title" class="label">Bills account</h3>
+    <div class="headline"><p class="headline-label">Remaining after Bills this period</p><p class="money{% if forecast.bills_surplus.amount < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</p></div>
+    <p class="card-line">This period's bills from Bills: paid {% include 'budget/_signed_money.html' with amount=bills_account_paid %} of {% include 'budget/_signed_money.html' with amount=bills_account_total %}{% if bills_account_left %} · {{ bills_account_left }} left to pay{% endif %}</p>
+    <details class="forecast-detail"><summary>How this is worked out</summary>
+      <dl class="ledger-lines">
+        <div><dt>Bills balance</dt><dd>{% include 'budget/_signed_money.html' with amount=bills_balance %}</dd></div>
+        <div><dt>− unpaid bills before payday</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.due_this_period.bills_total %}</dd></div>
+        <div class="ledger-total"><dt>= Remaining after Bills this period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</dd></div>
+      </dl>
+    </details>
+    <div class="next-period">
+      <p><strong>Next pay period</strong> <small>{{ next_period.start_date }} – {{ next_period.end_date }}</small></p>
+      <div class="headline"><p class="headline-label">Remaining after bills next period</p><p class="money{% if forecast.next_bills_covered.amount < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.next_bills_covered.amount %}</p></div>
+      {% if forecast.next_bills_covered.amount < 0 %}<p class="status-text negative">Next period is short by ${{ forecast.next_bills_covered.amount|cut:'-'|floatformat:"2g" }}.{% if held_for_next > 0 %} ${{ held_for_next|floatformat:"2g" }} of it is held back on the Spending card.{% endif %}</p>{% endif %}
+      <details class="forecast-detail"><summary>How this is worked out</summary>
+        <dl class="ledger-lines">
+          <div><dt>Remaining after Bills this period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</dd></div>
+          <div><dt>+ expected paycheck</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.expected_paycheck.amount %}</dd></div>
+          <div><dt>− next period's bills</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.next_period_bills.total %}</dd></div>
+          <div><dt>{% if forecast.anticipated_from_target %}− spending target{% else %}− expected spending <small>(recent average; no target set)</small>{% endif %}</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.anticipated_spending.amount %}</dd></div>
+          <div class="ledger-total"><dt>= Remaining after bills next period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.next_bills_covered.amount %}</dd></div>
+        </dl>
+        {% include 'budget/_forecast_figure.html' with fig=forecast.anticipated_spending %}{% include 'budget/_forecast_figure.html' with fig=forecast.expected_paycheck %}
+      </details>
+    </div>
+    <p class="card-links"><a href="{% url 'bills' %}">Bills</a> · <a href="{% url 'budgets' %}?period={{ next_period.pk }}">Edit paycheck or spending target</a>{% if bills_account %} · <a href="{% url 'account_reconcile' bills_account.pk %}">Reconcile with bank</a>{% endif %}</p>
+  </article>
+  {% with carry=forecast.carry_over %}<article class="card money-card carry-card" aria-labelledby="carry-card-title">
+    <h3 id="carry-card-title" class="label">Carry over to next pay period</h3>
+    <div class="headline"><p class="headline-label">Needs to carry over</p><p class="money">{% include 'budget/_signed_money.html' with amount=carry.needed %}</p></div>
+    {% if carry.needed > 0 %}
+    <p class="status-text">Next period's bills and {% if forecast.anticipated_from_target %}spending target{% else %}expected spending{% endif %} are more than the expected paycheck, so this much has to be left over from this period.</p>
+    <dl class="ledger-lines carry-sources">
+      <div><dt>From Bills <small>(remaining after Bills this period)</small></dt><dd>{% include 'budget/_signed_money.html' with amount=carry.from_bills %}</dd></div>
+      <div><dt>From Spending <small>(held for next period)</small></dt><dd>{% include 'budget/_signed_money.html' with amount=carry.from_spending %}</dd></div>
+    </dl>
+    {% if carry.bills_shortfall_from_spending > 0 %}<p class="status-text">Spending also holds back ${{ carry.bills_shortfall_from_spending|floatformat:"2g" }} because Bills is short this period.</p>{% endif %}
+    {% else %}
+    <p class="status-text">Nothing needs to carry over. The expected paycheck covers next period's bills and {% if forecast.anticipated_from_target %}spending target{% else %}expected spending{% endif %} with ${{ carry.spare|floatformat:"2g" }} to spare.</p>
+    {% endif %}
+    <details class="forecast-detail"><summary>How this is worked out</summary>
+      <dl class="ledger-lines">
+        <div><dt>Next period's bills</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.next_period_bills.total %}</dd></div>
+        <div><dt>{% if forecast.anticipated_from_target %}+ spending target{% else %}+ expected spending <small>(recent average; no target set)</small>{% endif %}</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.anticipated_spending.amount %}</dd></div>
+        <div><dt>− expected paycheck</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.expected_paycheck.amount %}</dd></div>
+        <div class="ledger-total"><dt>= Needs to carry over <small>(never below $0.00)</small></dt><dd>{% include 'budget/_signed_money.html' with amount=carry.needed %}</dd></div>
+      </dl>
+      <p>Bills covers as much as it has left after this period's bills; Spending holds back the rest, which lowers Safe to spend.</p>
+    </details>
+  </article>{% endwith %}
+</div>
+{% else %}<p class="notice" role="status">{{ forecast.reason }}</p>{% endif %}
+{% if forecast.needs_review.count %}<p class="warning" role="status"><strong>{{ forecast.needs_review.count }} older unpaid bill{{ forecast.needs_review.count|pluralize }} (${{ forecast.needs_review.total|floatformat:"2g" }}) need review.</strong> <a href="{% url 'bills' %}">{{ forecast.needs_review.message }}</a>. They are not included in the figures above.</p>{% endif %}
+</section>{% endif %}
+<section class="cards accounts" aria-label="Other account balances">{% for account,balance in accounts %}{% if not forecast.available or account.type != 'spending' and account.type != 'bills' %}<article class="card"><p class="label">{{ account.name }} balance</p><p class="money{% if low_balance_alert_enabled and account.type == 'spending' and balance < low_balance_threshold %} low-balance{% endif %}">${{ balance|floatformat:"2g" }}</p>{% if low_balance_alert_enabled and account.type == 'spending' and balance < low_balance_threshold %}<span class="danger status">Low balance · below ${{ low_balance_threshold|floatformat:"2g" }}</span>{% endif %}<a class="status" href="{% url 'account_reconcile' account.pk %}">Reconcile with bank</a></article>{% endif %}{% endfor %}</section>
+<section class="card mobile-quick-actions">{% include 'budget/_quick_actions.html' %}</section>
+{% if period %}<section class="card current-period"><div class="period-summary"><div><p class="eyebrow">Current pay period</p><h2>{{ period.start_date }} – {{ period.end_date }}</h2><p data-visual-dynamic>{{ period.end_date|timeuntil }} remaining · {% if period.is_locked %}🔒 Locked{% else %}● Open{% endif %}</p></div></div><div class="spending-habits"><div><h3>Spending habits</h3><p class="muted">Spending-account purchases during this pay period, after refunds.</p></div>{% if spending_chart.items %}<div class="chart-layout"><div class="pie-chart" data-pie-chart><svg class="category-pie-svg" viewBox="0 0 200 200" role="group" aria-label="Spending by category; total ${{ spending_chart.total|floatformat:"2g" }}. Tab to each slice to hear its category and amount.">{% for slice in spending_chart.slices %}<path d="{{ slice.d }}" fill="{{ slice.color }}" tabindex="0" data-index="{{ forloop.counter0 }}" data-tip="{{ slice.name }} · ${{ slice.amount|floatformat:"2g" }} · {{ slice.share }}%" aria-label="{{ slice.name }}: ${{ slice.amount|floatformat:"2g" }}, {{ slice.share }}%"><title>{{ slice.name }} · ${{ slice.amount|floatformat:"2g" }} · {{ slice.share }}%</title></path>{% endfor %}</svg><div class="chart-tip" hidden></div><p class="chart-readout" aria-live="polite" data-hint="Tap or hover over a slice to see its category and amount.">Tap or hover over a slice to see its category and amount.</p></div><ul class="chart-legend">{% for item in spending_chart.items %}<li data-index="{{ forloop.counter0 }}"><span class="swatch" style="background:{{ item.color }}" aria-hidden="true"></span><span>{{ item.name }}</span><strong>${{ item.amount|floatformat:"2g" }} · {{ item.percent|floatformat:0 }}%</strong></li>{% endfor %}</ul></div>{% else %}<div class="empty chart-empty">No Spending-account purchases in this pay period yet.</div>{% endif %}</div></section>{% else %}<div class="card empty"><h2>No current pay period</h2><p>Add your first pay period so the budget knows when you are paid.</p><a class="button primary" href="{% url 'pay_period_add' %}">Add pay period</a></div>{% endif %}
+<div class="grid"><section class="card"><div class="sectionhead"><h2>Upcoming bills</h2><a href="{% url 'bills' %}">View all</a></div><ul class="rows">{% for bill in bill_occurrences %}<li><div><strong>{{ bill.bill.name }}</strong><small>Due {{ bill.due_date }} · {% if bill.remaining_amount == 0 %}Paid{% else %}{{ bill.get_status_display }}{% endif %}</small></div><span class="money-small">${{ bill.remaining_amount|floatformat:"2g" }}</span></li>{% empty %}<li class="empty">No bills due in this period.</li>{% endfor %}</ul></section><section class="card desktop-quick-actions">{% include 'budget/_quick_actions.html' %}</section></div>
+<script src="{% static 'budget/charts.js' %}" defer></script>
+{% endblock %}

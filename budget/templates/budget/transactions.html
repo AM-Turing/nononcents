@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/transactions.css' %}"><link rel="stylesheet" href="{% static 'budget/reconciliation.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead transaction-pagehead">
+  <div><h1>{{ page_titles.transactions|default:'History' }}</h1></div>
+  <div class="form-actions transaction-page-actions">{% if selected_account %}<a class="button" href="{% url 'account_reconcile' selected_account.pk %}">Reconcile {{ selected_account.name }}</a>{% endif %}<a class="button" href="{% url 'transfer_add' %}">⇄ Add transfer</a><a class="button primary" href="{% url 'expense_add' %}">＋ Add transaction</a></div>
+</header>
+<section class="card transaction-history">
+  <details class="filter-details" data-filter-details{% if has_filters %} open{% endif %}><summary>Search and filters{% if has_filters %} (active){% endif %}</summary>
+  <form class="filters transaction-filters" method="get" role="search">
+    <label class="transaction-search">Search transactions<input type="search" name="q" value="{{ keyword }}" placeholder="Merchant, notes, category, account, or amount"></label>
+    <label>Account<select name="account"><option value="">All accounts</option>{% for a in filter_accounts %}<option value="{{ a.pk }}"{% if selected_account and selected_account.pk == a.pk %} selected{% endif %}>{{ a.name }}</option>{% endfor %}</select></label>
+    <label>Type<select name="type"><option value="">All types</option>{% for key, name in history_types %}<option value="{{ key }}"{% if type_filter == key %} selected{% endif %}>{{ name }}</option>{% endfor %}</select></label>
+    <label>From<span class="transaction-date-shell"><input type="date" name="start" value="{{ request.GET.start }}"></span></label>
+    <label>To<span class="transaction-date-shell"><input type="date" name="end" value="{{ request.GET.end }}"></span></label>
+    <button class="primary">Search</button>
+    {% if has_filters %}<a class="button" href="{% url 'transactions' %}">Clear</a>{% endif %}
+  </form>
+  </details>
+  <p class="muted" role="status">{{ page_obj.paginator.count }} transaction{{ page_obj.paginator.count|pluralize }}{% if has_filters %} match your filters{% endif %}.</p>
+  {% if selected_account %}<p>Showing {{ selected_account.name }} only. Amounts are signed for this account (+ money in, − money out) and the balance column is the account balance after each row.</p>{% endif %}
+  <div class="table-wrap transaction-table" tabindex="0" aria-label="Scrollable transaction history">
+    <table>
+      
+      <thead><tr><th>Date</th><th>Description</th><th>Account</th><th>Category / split</th><th class="num">Amount</th>{% if selected_account %}<th class="num">Balance after</th>{% endif %}<th>Cleared</th><th>Actions</th></tr></thead>
+      <tbody>{% for row in rows %}<tr><td>{{ row.date }}</td><td class="col-description"><span class="status">{{ row.type }}</span> {{ row.description }}{% if row.notes %}<small class="row-notes">{{ row.notes }}</small>{% endif %}</td><td>{{ row.account|default:"—" }}</td><td>{{ row.category|default:"—" }}</td><td class="num">{% if row.sign == -1 %}−{% elif row.sign == 1 %}+{% endif %}${{ row.amount|floatformat:"2g" }}</td>{% if selected_account %}<td class="num">${{ row.balance_after|floatformat:"2g" }}</td>{% endif %}<td><span class="cleared-state">{{ row.cleared }}</span></td><td><div class="form-actions">{% if row.edit_url %}<a class="button" href="{{ row.edit_url }}">Edit</a>{% endif %}{% if row.quick_delete %}<form method="post" action="{{ row.delete_url }}" class="inline-form">{% csrf_token %}<input type="hidden" name="quick" value="1"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="button danger" aria-label="Delete {{ row.type|lower }} {{ row.description }}">Delete</button></form>{% else %}<a class="button danger" href="{{ row.delete_url }}">Delete</a>{% endif %}</div></td></tr>{% empty %}<tr><td colspan="{% if selected_account %}8{% else %}7{% endif %}" class="empty">{% if has_filters %}No transactions match your filters.{% else %}No transactions yet. <a href="{% url 'expense_add' %}">Add your first expense</a>.{% endif %}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  <div class="transaction-list">
+    {% for row in rows %}
+    <article class="transaction-item">
+      <div class="transaction-item-head">
+        <div><time>{{ row.date }}</time><span class="status">{{ row.type }}</span></div>
+        <strong class="money-small">{% if row.sign == -1 %}−{% elif row.sign == 1 %}+{% endif %}${{ row.amount|floatformat:"2g" }}</strong>
+      </div>
+      <dl>
+        <div><dt>Description</dt><dd>{{ row.description }}</dd></div>
+        {% if row.account %}<div><dt>Account</dt><dd>{{ row.account }}</dd></div>{% endif %}
+        {% if row.category %}<div><dt>Category / split</dt><dd>{{ row.category }}</dd></div>{% endif %}
+        {% if row.notes %}<div><dt>Notes</dt><dd>{{ row.notes }}</dd></div>{% endif %}
+        {% if selected_account %}<div><dt>Balance after</dt><dd>${{ row.balance_after|floatformat:"2g" }}</dd></div>{% endif %}
+        <div><dt>Cleared</dt><dd>{{ row.cleared }}</dd></div>
+      </dl>
+      <div class="form-actions transaction-item-actions">{% if row.edit_url %}<a class="button" href="{{ row.edit_url }}">Edit</a>{% endif %}{% if row.quick_delete %}<form method="post" action="{{ row.delete_url }}" class="inline-form">{% csrf_token %}<input type="hidden" name="quick" value="1"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="button danger" aria-label="Delete {{ row.type|lower }} {{ row.description }}">Delete</button></form>{% else %}<a class="button danger" href="{{ row.delete_url }}">Delete</a>{% endif %}</div>
+    </article>
+    {% empty %}<p class="empty">{% if has_filters %}No transactions match your filters.{% else %}No transactions yet. <a href="{% url 'expense_add' %}">Add your first expense</a>.{% endif %}</p>{% endfor %}
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Transaction pages">
+    {% if page_obj.has_previous %}<a class="button" rel="prev" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">← Previous</a>{% else %}<span></span>{% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="button" rel="next" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next →</a>{% else %}<span></span>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+<script src="{% static 'budget/filter-details.js' %}" defer></script>
+{% endblock %}

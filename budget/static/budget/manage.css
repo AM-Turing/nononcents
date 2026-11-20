@@ -1,0 +1,12 @@
+.manage-help { margin: 0 0 16px; }
+.manage-table table { min-width: 0; }
+.manage-table th, .manage-table td { overflow-wrap: break-word; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.row-actions form { margin: 0; }
+.manage-note { color: var(--sub); }
+.manage-section { margin-top: 16px; }
+.manage-section > summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.manage-section h2 { font-size: 1.15rem; margin: 0 0 4px; }
+.button.warn, button.warn { border-color: var(--danger); color: var(--danger); }
+.field input[type="checkbox"] { display: inline-block; width: 1.25rem; height: 1.25rem; min-height: 0; vertical-align: middle; }
+.field .check-label { display: flex; align-items: center; gap: 10px; font-weight: 700; }

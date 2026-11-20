@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/application-admin.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead">
+  <div><h1>{{ page_titles.application_admin|default:'Admin' }}</h1><p>Manage navigation, dashboard shortcuts, access, and activity.</p></div>
+</header>
+
+<section class="card admin-panel backup-panel" aria-labelledby="backup-heading">
+  <div><h2 id="backup-heading">Backups</h2><p class="muted">Reported by the backup job (scripts/backup.sh).</p></div>
+  <p class="backup-state backup-state-{{ backup_status.level }}"><strong>{% if backup_status.level == 'ok' %}Healthy{% elif backup_status.level == 'error' %}Problem{% else %}Unknown{% endif %}</strong> &mdash; {{ backup_status.headline }}</p>
+  {% if backup_status.detail %}<p>{{ backup_status.detail }}</p>{% endif %}
+  <dl class="backup-facts">
+    <div><dt>Last successful backup</dt><dd>{% if backup_status.last_success_at %}{{ backup_status.last_success_at|date:"N j, Y, g:i A T" }} ({{ backup_status.last_success_at|timesince }} ago){% else %}None recorded{% endif %}</dd></div>
+    <div><dt>Last run finished</dt><dd>{% if backup_status.finished_at %}{{ backup_status.finished_at|date:"N j, Y, g:i A T" }} ({{ backup_status.finished_at|timesince }} ago){% else %}Unknown{% endif %}</dd></div>
+    <div><dt>Copies</dt><dd>{% if backup_status.copies_ok is not None and backup_status.copies_expected is not None %}{{ backup_status.copies_ok }} of {{ backup_status.copies_expected }}{% else %}Unknown{% endif %}</dd></div>
+    <div><dt>Latest dump</dt><dd>{{ backup_status.dump|default:"None recorded" }}</dd></div>
+  </dl>
+  {% if backup_pending %}
+  <p class="notice" role="status">Backup requested{% if backup_pending.requested_by %} by {{ backup_pending.requested_by }}{% endif %}{% if backup_pending.requested_at %} at {{ backup_pending.requested_at|date:"g:i A" }}{% endif %}. It starts within a minute and takes a few seconds; reload this page to see the result above.</p>
+  {% elif backup_requests_available %}
+  <form method="post" class="backup-now">{% csrf_token %}<input type="hidden" name="intent" value="backup_now"><button type="submit" class="button">Back up now</button><small>Runs the same verified backup as a scheduled one.</small></form>
+  {% else %}
+  <p class="muted">Back up now needs a one-time setup on the server (see “Back up now” in the deployment notes).</p>
+  {% endif %}
+</section>
+
+<div class="admin-grid">
+  <section class="card admin-panel">
+    <div><h2>Page names</h2><p class="muted">Choose a page, then type its new name. It appears in the menus and as the page heading.</p></div>
+    <form method="post" class="page-name-form">
+      {% csrf_token %}<input type="hidden" name="intent" value="save_page_name">
+      <div class="field"><label for="id_page-page">Page</label><select name="page-page" id="id_page-page" data-page-names>{% for row in page_name_rows %}<option value="{{ row.key }}" data-current="{{ row.current }}" data-original="{{ row.original }}"{% if row.selected %} selected{% endif %}>{{ row.original }}{% if row.current != row.original %} — now “{{ row.current }}”{% endif %}</option>{% endfor %}</select>{{ labels_form.page.errors }}</div>
+      <div class="field"><label for="id_page-name">New name</label><input type="text" name="page-name" id="id_page-name" maxlength="40" autocomplete="off" value="{% for row in page_name_rows %}{% if row.selected %}{{ row.current }}{% endif %}{% endfor %}"><small id="{{ labels_form.name.auto_id }}_helptext">{{ labels_form.name.help_text }}</small>{{ labels_form.name.errors }}</div>
+      <button class="primary" type="submit">Save name</button>
+    </form>
+    <script src="{% static 'budget/page-names.js' %}" defer></script>
+  </section>
+
+  <section class="card admin-panel">
+    <div><h2>Profile alerts</h2><p class="muted">Control dashboard warnings for {{ household.name }}. These settings do not affect other profiles.</p></div>
+    <form method="post">
+      {% csrf_token %}<input type="hidden" name="intent" value="save_alerts">
+      {% for field in alerts_form %}<div class="field">{{ field.label_tag }}{{ field }}{% if field.help_text %}<small id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}{{ field.errors }}</div>{% endfor %}
+      <button class="primary" type="submit">Save alerts</button>
+    </form>
+  </section>
+
+  <section class="card admin-panel">
+    <div><h2>Quick actions</h2><p class="muted">Add shortcuts to the Quick actions card on the home page.</p></div>
+    {% if quick_actions %}
+      <ul class="admin-list">
+        {% for action in quick_actions %}
+          <li><div><strong>{{ action.label }}</strong><small>{{ action.destination_label }}</small></div><form method="post">{% csrf_token %}<input type="hidden" name="intent" value="delete_action"><input type="hidden" name="index" value="{{ action.index }}"><button type="submit">Remove</button></form></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}<input type="hidden" name="intent" value="add_action">
+      {% for field in action_form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+      <button class="primary" type="submit">Add quick action</button>
+    </form>
+  </section>
+
+  <section class="card admin-panel admin-profiles">
+    <div><h2>Budget profiles</h2><p class="muted">Profiles keep budgets and their authorized users separate. Sign out to choose another profile.</p></div>
+    <div class="table-wrap"><table><thead><tr><th>Profile</th><th>Members</th><th>Actions</th></tr></thead><tbody>{% for profile in profiles %}<tr><td><strong>{{ profile.name }}</strong>{% if profile == household %} <span class="status">Current</span>{% endif %}</td><td>{{ profile.member_count }}</td><td><div class="row-actions"><a class="button" href="{% url 'application_profile_access' profile.pk %}">Manage access</a>{% if profile != household %}<a class="button" href="{% url 'application_profile_delete' profile.pk %}">Delete profile</a>{% else %}<small>Switch profiles to delete</small>{% endif %}</div></td></tr>{% endfor %}</tbody></table></div>
+    <details {% if profile_form.errors %}open{% endif %}>
+      <summary class="button primary">＋ Add profile</summary>
+      <form method="post" class="admin-profile-form">
+        {% csrf_token %}<input type="hidden" name="intent" value="add_profile">
+        {% for field in profile_form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+        <button class="primary" type="submit">Create profile</button>
+      </form>
+    </details>
+  </section>
+
+  <section class="card admin-panel admin-users">
+    <div><h2>Users</h2><p class="muted">Create logins and reset forgotten passwords for members of this profile.</p></div>
+    <div class="table-wrap"><table><thead><tr><th>Username</th><th>Name</th><th>Access</th><th>Last login</th><th>Actions</th></tr></thead><tbody>{% for account_user in users %}<tr><td><strong>{{ account_user.username }}</strong></td><td>{{ account_user.get_full_name|default:'—' }}</td><td>{% if account_user.is_staff %}Admin{% else %}Standard{% endif %}</td><td data-visual-dynamic>{{ account_user.last_login|date:'M j, Y, g:i a'|default:'Never' }}</td><td><div class="row-actions"><a class="button" href="{% url 'application_user_password' account_user.pk %}">Reset password</a>{% if account_user != user %}<a class="button" href="{% url 'application_user_delete' account_user.pk %}">Delete user</a>{% endif %}</div></td></tr>{% endfor %}</tbody></table></div>
+    <details {% if user_form.errors %}open{% endif %}>
+      <summary class="button primary">＋ Add user</summary>
+      <form method="post" class="admin-user-form">
+        {% csrf_token %}<input type="hidden" name="intent" value="add_user">
+        {% for field in user_form %}<div class="field">{{ field.label_tag }}{{ field }}{% if field.help_text %}<small id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</small>{% endif %}{{ field.errors }}</div>{% endfor %}
+        <button class="primary" type="submit">Create user</button>
+      </form>
+    </details>
+  </section>
+
+  <section class="card admin-panel admin-logs" id="activity-log" aria-labelledby="activity-log-title">
+    <div><h2 id="activity-log-title">Activity log</h2><p class="muted">The 100 most recent entries: sign-ins, failed sign-ins and changes, with who made them. Passwords are never recorded; a failed sign-in shows the username only when it is a real user, otherwise “Unknown user”.</p></div>
+    <nav class="log-filters" aria-label="Show in the activity log">{% for key, label in activity_filters.items %}<a class="button{% if key == activity_filter %} primary{% endif %}" href="?log={{ key }}#activity-log"{% if key == activity_filter %} aria-current="true"{% endif %}>{{ label }}</a>{% endfor %}</nav>
+    <div class="table-wrap"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>What</th><th>Details</th></tr></thead><tbody>{% for row in activity %}<tr{% if row.failed %} class="log-failed"{% endif %}><td data-visual-dynamic><span class="nowrap">{{ row.when|date:'M j, Y' }}</span> <span class="nowrap">{{ row.when|date:'g:i:s a' }}</span></td><td>{{ row.who }}</td><td>{{ row.action }}</td><td>{{ row.what }}</td><td>{% if row.details %}<ul class="log-details">{% for line in row.details %}<li><code>{{ line }}</code></li>{% endfor %}</ul>{% else %}—{% endif %}</td></tr>{% empty %}<tr><td colspan="5" class="empty">Nothing recorded{% if activity_filter != "all" %} for this filter{% endif %} yet.</td></tr>{% endfor %}</tbody></table></div>
+  </section>
+</div>
+{% endblock %}

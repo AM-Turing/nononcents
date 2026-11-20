@@ -1,0 +1,105 @@
+.month-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.row-actions { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.row-actions form { margin: 0; }
+.table-wrap tbody tr { scroll-margin-top: 1rem; }
+.muted { color: var(--sub); }
+@media (max-width: 479px) {
+  .month-nav { padding: 10px; }
+  .month-nav .button { padding: .5rem; font-size: .8rem; }
+  .row-actions { flex-direction: column; align-items: stretch; }
+}
+
+@media (max-width: 760px) {
+  .month-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .month-nav > a:nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+  }
+
+  .table-wrap {
+    overflow: visible;
+  }
+
+  .table-wrap table,
+  .table-wrap tbody,
+  .table-wrap tr,
+  .table-wrap td {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .table-wrap thead {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .table-wrap tbody tr {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+
+  .table-wrap tbody td {
+    align-items: start;
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: minmax(5.5rem, 35%) minmax(0, 1fr);
+    text-align: left;
+  }
+
+  .table-wrap tbody td::before {
+    color: var(--sub);
+    content: attr(data-label);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+
+  .table-wrap tbody td.empty {
+    display: block;
+  }
+
+  /* Everything in a cell (name, category line, notes) stays in the value column. */
+  .table-wrap tbody td[data-label] > * {
+    grid-column: 2;
+  }
+
+  .table-wrap tbody td .status {
+    justify-self: start;
+  }
+
+  .table-wrap tbody td.empty::before {
+    content: none;
+  }
+
+  .row-actions {
+    align-items: stretch;
+    flex-direction: column;
+    white-space: normal;
+  }
+
+  .row-actions .button,
+  .row-actions button {
+    justify-content: center;
+    width: 100%;
+  }
+}
+.confirm-all { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 12px; }
+.status-legend { margin: 0 0 12px; }
+.status-legend summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.status-legend ul { margin: 0; padding-left: 1.2rem; }
+.row-actions form button { min-height: 44px; }

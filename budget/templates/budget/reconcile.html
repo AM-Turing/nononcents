@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/reconciliation.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><a href="{% url 'accounts' %}">← Accounts</a><h1>Reconcile {{ account.name }}</h1></div></header>
+{% include 'budget/_reconcile_help.html' %}
+<section class="card form-card">
+  <form method="post" class="reconcile-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="field">{{ form.statement_date.label_tag }}{{ form.statement_date }}{{ form.statement_date.errors }}</div>
+    <div class="field">{{ form.statement_balance.label_tag }}{{ form.statement_balance }}{{ form.statement_balance.errors }}</div>
+    <div class="form-actions"><button class="{% if compare %}button{% else %}primary{% endif %}" name="action" value="compare" type="submit">Compare</button></div>
+    {% if compare %}
+    <h2>Comparison through {{ compare.statement_date }}</h2>
+    <dl class="reconcile-summary">
+      <div><dt>Bank statement balance</dt><dd>${{ compare.statement_balance|floatformat:"2g" }}</dd></div>
+      <div><dt>Balance in the app</dt><dd>${{ compare.ledger_balance|floatformat:"2g" }}</dd></div>
+      <div><dt>Difference (bank − app)</dt><dd><strong>{% if compare.difference > 0 %}+{% elif compare.difference < 0 %}−{% endif %}${{ compare.difference|cut:"-"|floatformat:"2g" }}</strong>{% if compare.difference == 0 %} Matches{% endif %}</dd></div>
+    </dl>
+    <fieldset>
+      <legend>Uncleared items on or before {{ compare.statement_date }}</legend>
+      {% if compare.items %}
+      <div class="table-wrap" tabindex="0" aria-label="Scrollable uncleared items">
+      <table>
+        <thead><tr><th>Clear</th><th>Date</th><th>Type</th><th>Description</th><th class="num">Amount</th></tr></thead>
+        <tbody>{% for entry in compare.items %}<tr>
+          <td><input type="checkbox" name="clear" value="{{ entry.item.key }}"{% if entry.checked %} checked{% endif %} aria-label="Mark cleared: {{ entry.item.description }}"></td>
+          <td>{{ entry.item.date }}</td><td>{{ entry.item.label }}</td><td>{{ entry.item.description }}</td>
+          <td class="num">{% if entry.item.amount < 0 %}−{% else %}+{% endif %}${{ entry.item.amount|cut:"-"|floatformat:"2g" }} <span class="visually-hidden">{% if entry.item.amount < 0 %}outflow{% else %}inflow{% endif %}</span></td>
+        </tr>{% endfor %}</tbody>
+      </table>
+      </div>
+      {% else %}<p class="empty">No uncleared items.</p>{% endif %}
+    </fieldset>
+    {% if compare.difference != 0 %}
+    <fieldset>
+      <legend>The bank and the app differ</legend>
+      <p>Find the missing or incorrect transaction and add or fix it, or post a correction. Corrections change only this account's balance, not spending, bills, income, or budgets.</p>
+      <div class="field"><label><input type="checkbox" name="post_correction" value="on"{% if request.POST.post_correction %} checked{% endif %}> Post a balance correction of ${{ compare.difference|cut:"-"|floatformat:"2g" }} ({% if compare.difference > 0 %}increase{% else %}decrease{% endif %})</label></div>
+      <div class="field"><label for="id_reason">Reason for correction</label><input type="text" name="reason" id="id_reason" maxlength="255" value="{{ request.POST.reason }}" autocomplete="off"></div>
+    </fieldset>
+    {% endif %}
+    <div class="form-actions"><button class="primary" name="action" value="reconcile" type="submit">Reconcile account</button><a class="button" href="{% url 'accounts' %}">Cancel</a></div>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}

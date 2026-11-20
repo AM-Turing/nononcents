@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/manage.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><h1>{{ page_titles.categories|default:'Categories' }}</h1></div></header>
+<p class="manage-note">Utilities can also be paid from Spending. Removing a category that has history archives it instead, so history is kept.</p>
+
+<section class="card manage-section" aria-labelledby="spending-heading">
+  <div class="sectionhead"><h2 id="spending-heading">Spending (paid from Spending or Savings)</h2><a class="button" href="{% url 'category_add' %}?kind=spending">Add spending category</a></div>
+  {% include 'budget/_category_table.html' with items=spending add_kind='spending' add_label='spending' %}
+</section>
+
+<section class="card manage-section" aria-labelledby="bills-heading">
+  <div class="sectionhead"><h2 id="bills-heading">Bills (paid from the Bills account)</h2><a class="button" href="{% url 'category_add' %}?kind=bill">Add bill category</a></div>
+  {% include 'budget/_category_table.html' with items=bills add_kind='bill' add_label='bill' %}
+</section>
+
+{% if other %}
+<details class="card manage-section">
+  <summary>Other kinds (income, savings, adjustment)</summary>
+  <div class="table-wrap manage-table" tabindex="0" aria-label="Scrollable list of other categories">
+    <table>
+      <thead><tr><th>Name</th><th>Kind</th><th>Essential</th><th class="num">Entries</th></tr></thead>
+      <tbody>{% for item in other %}<tr><td>{{ item.category.name }}</td><td>{{ item.category.get_type_display }}</td><td>{{ item.category.is_essential|yesno:"Yes,No" }}</td><td class="num">{{ item.count }}</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</details>
+{% endif %}
+
+{% if archived %}
+<details class="card manage-section">
+  <summary>Archived ({{ archived|length }})</summary>
+  <ul class="rows">{% for category in archived %}<li><span>{{ category.name }} <small>{{ category.get_type_display }}</small></span>
+    <form method="post" action="{% url 'category_restore' category.pk %}">{% csrf_token %}<button type="submit">Restore<span class="visually-hidden"> {{ category.name }}</span></button></form></li>{% endfor %}</ul>
+</details>
+{% endif %}
+{% endblock %}

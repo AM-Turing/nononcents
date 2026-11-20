@@ -1,0 +1,23 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+db.sqlite3
+staticfiles/
+backups/
+playwright-report/
+test-results/
+node_modules/
+# Local environment files and secret-bearing backups
+.env
+.env.*
+!.env.example
+.DS_Store
+*.dump
+
+# Browser crash dumps
+tests/**/core
+core.[0-9]*

@@ -1,0 +1,17 @@
+{% if savings_formset %}
+<fieldset class="savings-allocation-fields" data-savings-allocation>
+  <legend>Take from savings goals</legend>
+  <p class="muted">Choose one goal by default. The amounts must equal the full withdrawal.</p>
+  {{ savings_formset.management_form }}
+  {% if savings_formset.non_form_errors %}<div class="error" role="alert">{{ savings_formset.non_form_errors }}</div>{% endif %}
+  <label class="savings-multiple-toggle"><input type="checkbox" data-savings-multiple> Split withdrawal across multiple goals</label>
+  {% for savings_form in savings_formset %}
+    <div class="savings-allocation-row{% if not forloop.first %} savings-additional-row{% endif %}" data-savings-row>
+      {% for hidden in savings_form.hidden_fields %}{{ hidden }}{% endfor %}
+      <div class="field"><label for="{{ savings_form.goal.id_for_label }}">Goal {% if savings_formset|length > 1 %}{{ forloop.counter }}{% endif %}</label>{{ savings_form.goal }}{{ savings_form.goal.errors }}</div>
+      <div class="field">{{ savings_form.amount.label_tag }}{{ savings_form.amount }}{{ savings_form.amount.errors }}</div>
+      <div class="field checkbox-field savings-fulfillment-control">{{ savings_form.fulfills_goal }}{{ savings_form.fulfills_goal.label_tag }}{{ savings_form.fulfills_goal.errors }}</div>
+    </div>
+  {% endfor %}
+</fieldset>
+{% endif %}

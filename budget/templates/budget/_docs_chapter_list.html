@@ -1,0 +1,3 @@
+<ul class="docs-chapter-links">{% for item in chapters %}{% ifchanged item.admin_only %}{% if item.admin_only %}</ul><p class="label docs-admin-label">For administrators</p><ul class="docs-chapter-links">{% endif %}{% endifchanged %}
+  <li><a href="{% url 'docs_chapter' item.key %}"{% if item.key == chapter.key %} aria-current="page"{% endif %}><span class="docs-chapter-title">{{ item.title }}{% if item.admin_only %} <span class="status">Admin</span>{% endif %}</span><small>{{ item.summary }}</small></a></li>{% endfor %}
+</ul>

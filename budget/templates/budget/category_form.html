@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/manage.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><a href="{% url 'categories' %}">← Categories</a><h1>{{ title }}</h1></div></header>
+<section class="card form-card">
+  {% if form.non_field_errors %}<div class="error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">{{ form.name.label_tag }}{{ form.name }}{{ form.name.errors }}</div>
+    <div class="field">{{ form.kind.label_tag }}{{ form.kind }}{% if form.kind.help_text %}<small id="{{ form.kind.auto_id }}_helptext">{{ form.kind.help_text }}</small>{% endif %}{{ form.kind.errors }}</div>
+    <div class="field"><label class="check-label" for="{{ form.is_essential.id_for_label }}">{{ form.is_essential }} Essential</label><small id="{{ form.is_essential.auto_id }}_helptext">{{ form.is_essential.help_text }}</small>{{ form.is_essential.errors }}</div>
+    <div class="form-actions"><button class="primary" type="submit">Save</button><a class="button" href="{% url 'categories' %}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

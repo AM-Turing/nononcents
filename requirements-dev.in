@@ -1,0 +1,10 @@
+# Development and test tools on top of the application lock. Regenerate with:
+#   pip-compile --generate-hashes --allow-unsafe --strip-extras -o requirements-dev.lock requirements-dev.in
+-c requirements.lock
+-r requirements.in
+django-stubs[compatible-mypy]==5.2.2
+mypy==1.17.1
+pytest==8.4.1
+pytest-django==4.11.1
+time-machine==3.2.0
+ruff==0.12.7

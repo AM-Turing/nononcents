@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/statements.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><p class="eyebrow"><a href="{% url 'statements' %}">Statements</a></p><h1>{{ statement.account.name }} · {{ statement.period_start|date:"M j" }} – {{ statement.period_end|date:"M j, Y" }}</h1></div></header>
+
+{% if statement.closing_balance is not None %}<section class="card" aria-labelledby="balance-heading">
+  <h2 id="balance-heading">Balance on {{ statement.period_end|date:"M j" }}</h2>
+  <p>Bank: {% include 'budget/_signed_money.html' with amount=statement.closing_balance %} · App: {% include 'budget/_signed_money.html' with amount=review.ledger_at_end %} · {% if review.balance_difference == 0 %}<strong>they agree.</strong>{% else %}<strong>difference {% include 'budget/_signed_money.html' with amount=review.balance_difference %}</strong>. Reviewing the lines below usually explains it; anything left can be settled from <a href="{% url 'account_reconcile' statement.account.pk %}">Reconcile</a>.{% endif %}</p>
+</section>{% endif %}
+
+<section class="card" aria-labelledby="review-heading">
+  <h2 id="review-heading">To review ({{ review.pending|length }})</h2>
+  {% if review.proposed_count > 1 %}<form method="post" action="{% url 'statement_line_action' statement.pk %}" class="statement-bulk">{% csrf_token %}<input type="hidden" name="action" value="match_all"><button type="submit" class="button primary">Confirm all {{ review.proposed_count }} proposed pairs</button><p class="muted">Check the pairs below first; each can be undone.</p></form>{% endif %}
+  {% if review.pending %}<ol class="statement-lines">{% for row in review.pending %}<li id="line-{{ row.line.pk }}" class="statement-line">
+    <div class="statement-bank">
+      <p class="statement-amount">{% include 'budget/_signed_money.html' with amount=row.line.amount %}</p>
+      <p>{{ row.line.date|date:"D M j" }}<span class="muted"> · bank text: {{ row.line.description|default:"(none)" }}</span></p>
+    </div>
+    {% if row.proposed %}<div class="statement-proposal">
+      <p>Your entry: <strong>{{ row.proposed.description|default:row.proposed.label }}</strong> · {{ row.proposed.label }} · {{ row.proposed.date|date:"M j" }}</p>
+      <form method="post" action="{% url 'statement_line_action' statement.pk %}">{% csrf_token %}<input type="hidden" name="action" value="match"><input type="hidden" name="line" value="{{ row.line.pk }}"><input type="hidden" name="key" value="{{ row.proposed.key }}"><button type="submit" class="button primary">Same purchase<span class="visually-hidden"> as {{ row.proposed.description }} on {{ row.proposed.date|date:"M j" }}</span></button></form>
+    </div>{% else %}<p class="statement-missing">No entry with this amount nearby. Possibly missed.</p>{% endif %}
+    {% if row.alternatives %}<details><summary>Other possible entries ({{ row.alternatives|length }})</summary><ul>{% for alt in row.alternatives %}<li><form method="post" action="{% url 'statement_line_action' statement.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="action" value="match"><input type="hidden" name="line" value="{{ row.line.pk }}"><input type="hidden" name="key" value="{{ alt.key }}"><span>{{ alt.description|default:alt.label }} · {{ alt.date|date:"M j" }}</span> <button type="submit" class="button">Same purchase<span class="visually-hidden"> as {{ alt.description }} on {{ alt.date|date:"M j" }}</span></button></form></li>{% endfor %}</ul></details>{% endif %}
+    <div class="form-actions">
+      <a class="button" href="{% if row.line.amount > 0 %}{% url 'income_add' %}{% else %}{% url 'expense_add' %}{% endif %}?statement_line={{ row.line.pk }}">Add as new entry</a>
+      <form method="post" action="{% url 'statement_line_action' statement.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="action" value="dismiss"><input type="hidden" name="line" value="{{ row.line.pk }}"><button type="submit" class="button">Dismiss</button></form>
+    </div>
+  </li>{% endfor %}</ol>{% else %}<p class="empty">Every statement line is reviewed.</p>{% endif %}
+</section>
+
+<section class="card" aria-labelledby="missing-heading">
+  <h2 id="missing-heading">Not on a statement yet ({{ review.not_on_statement|length }})</h2>
+  <p class="muted">Uncleared entries on {{ statement.account.name }} up to {{ statement.period_end|date:"M j" }} that no statement line matched. Recent ones usually appear on the next statement.</p>
+  {% if review.not_on_statement %}<ul class="statement-plain">{% for item in review.not_on_statement %}<li>{{ item.date|date:"M j" }} · {{ item.description|default:item.label }} · {% include 'budget/_signed_money.html' with amount=item.amount %}</li>{% endfor %}</ul>{% endif %}
+</section>
+
+{% if review.matched or review.dismissed %}<section class="card" aria-labelledby="done-heading">
+  <h2 id="done-heading">Reviewed</h2>
+  <ul class="statement-plain">{% for row in review.matched %}<li id="line-{{ row.line.pk }}">{{ row.line.date|date:"M j" }} · {% include 'budget/_signed_money.html' with amount=row.line.amount %} · same as {% if row.matched %}{{ row.matched.description|default:row.matched.label }} ({{ row.matched.date|date:"M j" }}){% else %}an entry that was since deleted{% endif %}
+    <form method="post" action="{% url 'statement_line_action' statement.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="action" value="reopen"><input type="hidden" name="line" value="{{ row.line.pk }}"><button type="submit" class="button">Undo<span class="visually-hidden"> match for {{ row.line.date|date:"M j" }}</span></button></form></li>{% endfor %}
+  {% for line in review.dismissed %}<li id="line-{{ line.pk }}">{{ line.date|date:"M j" }} · {% include 'budget/_signed_money.html' with amount=line.amount %} · dismissed ({{ line.description|default:"no bank text" }})
+    <form method="post" action="{% url 'statement_line_action' statement.pk %}" class="inline-form">{% csrf_token %}<input type="hidden" name="action" value="reopen"><input type="hidden" name="line" value="{{ line.pk }}"><button type="submit" class="button">Undo<span class="visually-hidden"> dismissal for {{ line.date|date:"M j" }}</span></button></form></li>{% endfor %}</ul>
+</section>{% endif %}
+
+<section class="card" aria-labelledby="remove-heading">
+  <h2 id="remove-heading">Remove this statement</h2>
+  <p class="muted">Removes the staged lines only. Your entries and their cleared marks stay as they are.</p>
+  <form method="post" action="{% url 'statement_delete' statement.pk %}">{% csrf_token %}<button type="submit" class="button danger">Remove statement</button></form>
+</section>
+{% endblock %}

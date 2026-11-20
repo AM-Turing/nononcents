@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/reconciliation.css' %}"><link rel="stylesheet" href="{% static 'budget/manage.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><h1>{{ page_titles.accounts|default:'Accounts' }}</h1></div><div class="row-actions"><a class="button" href="{% url 'account_add' %}">Add account</a><a class="button" href="{% url 'statements' %}">Statement check</a></div></header>
+{% include 'budget/_reconcile_help.html' %}
+<section class="card" aria-labelledby="accounts-heading">
+  <h2 id="accounts-heading" class="visually-hidden">Account balances and reconciliation</h2>
+  <div class="table-wrap" tabindex="0" aria-label="Scrollable account list">
+    <table>
+      <thead><tr><th>Account</th><th class="num">Balance in the app</th><th>Last reconciled</th><th class="num">Uncleared</th><th>Actions</th></tr></thead>
+      <tbody>{% for row in rows %}<tr>
+        <td><a href="{% url 'transactions' %}?account={{ row.account.pk }}">{{ row.account.name }}</a></td>
+        <td class="num">${{ row.balance|floatformat:"2g" }}</td>
+        <td>{% if row.last %}{{ row.last.statement_date }} · bank ${{ row.last.statement_balance|floatformat:"2g" }} · {% if row.last.adjustment %}correction {% if row.last.adjustment.is_increase %}+{% else %}−{% endif %}${{ row.last.adjustment.amount|floatformat:"2g" }}{% else %}no correction{% endif %}{% else %}Never{% endif %}</td>
+        <td class="num">{{ row.uncleared_count }} item{{ row.uncleared_count|pluralize }} · ${{ row.uncleared_total|floatformat:"2g" }}</td>
+        <td><div class="row-actions"><a class="button" href="{% url 'account_reconcile' row.account.pk %}">Reconcile<span class="visually-hidden"> {{ row.account.name }}</span></a><a class="button" href="{% url 'account_edit' row.account.pk %}">Edit<span class="visually-hidden"> {{ row.account.name }}</span></a><form method="post" action="{% url 'account_remove' row.account.pk %}">{% csrf_token %}<button class="warn" type="submit">Archive<span class="visually-hidden"> {{ row.account.name }}</span></button></form></div></td>
+      </tr>{% empty %}<tr><td colspan="5" class="empty">No active accounts. <a href="{% url 'account_add' %}">Add an account</a>.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% if archived %}
+<details class="card manage-section">
+  <summary>Archived accounts ({{ archived|length }})</summary>
+  <ul class="rows">{% for account in archived %}<li><span>{{ account.name }} <small>{{ account.get_type_display }}</small></span>
+    <form method="post" action="{% url 'account_restore' account.pk %}">{% csrf_token %}<button type="submit">Restore<span class="visually-hidden"> {{ account.name }}</span></button></form></li>{% endfor %}</ul>
+</details>
+{% endif %}
+{% endblock %}

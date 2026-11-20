@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/habits.css' %}?v=1">{% endblock %}
+{% block title %}Habits · {{ household.name }}{% endblock %}
+{% block content %}
+<header class="pagehead">
+  <div><h1>{{ page_titles.habits|default:'Habits' }}</h1><p>{{ view.name }}{% if adjusted %} (adjusted, not saved){% endif %}</p></div>
+</header>
+
+<nav class="view-chips" aria-label="Saved views">
+  <ul>
+    {% for saved in saved_views %}<li><a class="chip" href="{% url 'habits' %}?view={{ saved.pk }}"{% if selected and selected.pk == saved.pk and not adjusted %} aria-current="page"{% endif %}>{{ saved.name }}</a></li>
+    {% empty %}<li><a class="chip" href="{% url 'habits' %}" aria-current="page">Default</a></li>{% endfor %}
+    <li><a class="chip add-chip" href="{% url 'habit_view_add' %}">＋ Save as new view</a></li>
+    {% if selected %}<li><a class="chip" href="{% url 'habit_view_edit' selected.pk %}">Edit view</a></li>{% endif %}
+  </ul>
+</nav>
+
+<section class="card" aria-labelledby="adjust-h">
+  <h2 id="adjust-h">Adjust</h2>
+  <form method="get" class="adjust-form">
+    {% if selected %}<input type="hidden" name="view" value="{{ selected.pk }}">{% endif %}
+    <input type="hidden" name="adjust" value="1">
+    <div class="field"><label for="id_small_threshold">Small purchase at or under ($)</label><input id="id_small_threshold" name="small_threshold" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="{{ adjust.small_threshold.value|default_if_none:'' }}" required></div>
+    <div class="field"><label for="id_basis">Look back by</label><select id="id_basis" name="basis">{% for value, label in adjust.fields.basis.choices %}<option value="{{ value }}"{% if adjust.basis.value == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="id_periods">How many (1 to 24)</label><input id="id_periods" name="periods" type="number" min="1" max="24" value="{{ adjust.periods.value|default_if_none:'' }}" required></div>
+    <div class="form-actions"><button type="submit">Show</button></div>
+  </form>
+</section>
+
+<section class="card" aria-labelledby="summary-h">
+  <h2 id="summary-h">Summary</h2>
+  {% if report.columns %}
+  <p>{{ report.start|date:"M j, Y" }} to {{ report.end|date:"M j, Y" }}</p>
+  <p class="label">Total spending</p><p class="money">{% include 'budget/_signed_money.html' with amount=report.total %}</p>
+  <p>{{ report.small_count }} purchase{{ report.small_count|pluralize }}, {% include 'budget/_signed_money.html' with amount=report.small_total %} ({{ report.small_share }}% of spending) at or under {% include 'budget/_signed_money.html' with amount=view.small_threshold %}</p>
+  {% else %}<p class="empty">No pay periods or months to show yet.</p>{% endif %}
+</section>
+
+<section class="card" aria-labelledby="habits-h">
+  <h2 id="habits-h">Small purchases that add up</h2>
+  {% if report.habits %}
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Habits table, scrollable"><table>
+    <thead><tr><th scope="col">Merchant</th><th scope="col" class="num">Purchases</th><th scope="col" class="num">Total</th><th scope="col" class="num">About per month</th><th scope="col" class="num">About per year</th></tr></thead>
+    <tbody>{% for habit in report.habits %}<tr><th scope="row">{{ habit.merchant.name }}</th><td class="num">{{ habit.merchant.count }}</td><td class="num">{% include 'budget/_signed_money.html' with amount=habit.merchant.total %}</td><td class="num">≈ {% include 'budget/_signed_money.html' with amount=habit.per_month %}</td><td class="num">≈ {% include 'budget/_signed_money.html' with amount=habit.per_year %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">No habits found. A habit is a merchant with at least {{ view.min_repeat }} small purchases in this range.</p>{% endif %}
+</section>
+
+<section class="card" aria-labelledby="small-h">
+  <h2 id="small-h">Small purchases by merchant</h2>
+  {% if top_small %}
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Small purchases by merchant table, scrollable"><table>
+    <thead><tr><th scope="col">Merchant</th><th scope="col" class="num">Purchases</th><th scope="col" class="num">Total</th></tr></thead>
+    <tbody>{% for row in top_small %}<tr><th scope="row">{{ row.name }}</th><td class="num">{{ row.count }}</td><td class="num">{% include 'budget/_signed_money.html' with amount=row.total %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if more_small %}<details><summary>Show all ({{ more_small|length }} more)</summary>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="More small purchases by merchant, scrollable"><table>
+    <thead><tr><th scope="col">Merchant</th><th scope="col" class="num">Purchases</th><th scope="col" class="num">Total</th></tr></thead>
+    <tbody>{% for row in more_small %}<tr><th scope="row">{{ row.name }}</th><td class="num">{{ row.count }}</td><td class="num">{% include 'budget/_signed_money.html' with amount=row.total %}</td></tr>{% endfor %}</tbody>
+  </table></div></details>{% endif %}
+  {% else %}<p class="empty">No small purchases in this range.</p>{% endif %}
+</section>
+
+<section class="card" aria-labelledby="freq-h">
+  <h2 id="freq-h">Merchant frequency</h2>
+  {% if top_merchants %}
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Merchant frequency table, scrollable"><table>
+    <thead><tr><th scope="col">Merchant</th><th scope="col" class="num">Visits</th><th scope="col" class="num">Total</th><th scope="col" class="num">Average</th><th scope="col">Last</th></tr></thead>
+    <tbody>{% for row in top_merchants %}<tr><th scope="row">{{ row.name }}</th><td class="num">{{ row.count }}</td><td class="num">{% include 'budget/_signed_money.html' with amount=row.total %}</td><td class="num">{% include 'budget/_signed_money.html' with amount=row.average %}</td><td>{{ row.last|date:"M j, Y" }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if more_merchants %}<details><summary>Show the rest ({{ more_merchants|length }} more)</summary>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="More merchants, scrollable"><table>
+    <thead><tr><th scope="col">Merchant</th><th scope="col" class="num">Visits</th><th scope="col" class="num">Total</th><th scope="col" class="num">Average</th><th scope="col">Last</th></tr></thead>
+    <tbody>{% for row in more_merchants %}<tr><th scope="row">{{ row.name }}</th><td class="num">{{ row.count }}</td><td class="num">{% include 'budget/_signed_money.html' with amount=row.total %}</td><td class="num">{% include 'budget/_signed_money.html' with amount=row.average %}</td><td>{{ row.last|date:"M j, Y" }}</td></tr>{% endfor %}</tbody>
+  </table></div></details>{% endif %}
+  {% else %}<p class="empty">No merchants recorded in this range.</p>{% endif %}
+</section>
+
+<section class="card" aria-labelledby="trend-h">
+  <h2 id="trend-h">Category trend</h2>
+  {% if report.trend %}
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Category trend table, scrollable"><table>
+    <thead><tr><th scope="col">Category</th>{% for column in report.columns %}<th scope="col" class="num nowrap">{{ column.label }}</th>{% endfor %}<th scope="col" class="num">Average</th></tr></thead>
+    <tbody>{% for row in report.trend %}<tr><th scope="row">{{ row.category.name }}</th>{% for amount in row.amounts %}<td class="num">{% include 'budget/_signed_money.html' with amount=amount %}</td>{% endfor %}<td class="num">{% include 'budget/_signed_money.html' with amount=row.average %}</td></tr>{% endfor %}</tbody>
+    <tfoot><tr><th scope="row">Total</th>{% for amount in report.column_totals %}<td class="num">{% include 'budget/_signed_money.html' with amount=amount %}</td>{% endfor %}<td class="num">{% include 'budget/_signed_money.html' with amount=overall_average %}</td></tr></tfoot>
+  </table></div>
+  {% else %}<p class="empty">No spending in this range.</p>{% endif %}
+</section>
+
+{% if period and budget_lines %}
+<section class="card" aria-labelledby="budget-h">
+  <div class="sectionhead"><h2 id="budget-h">Category budgets this pay period</h2><a href="{% url 'budgets' %}">Set budgets</a></div>
+  <p>{{ period.start_date|date:"M j" }} to {{ period.end_date|date:"M j, Y" }}</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Category budgets table, scrollable"><table>
+    <thead><tr><th scope="col">Category</th><th scope="col" class="num">Budget</th><th scope="col" class="num">Spent</th><th scope="col" class="num">Remaining</th><th scope="col">Progress</th></tr></thead>
+    <tbody>{% for line in budget_lines %}<tr><th scope="row">{{ line.category.name }}</th><td class="num">{% include 'budget/_signed_money.html' with amount=line.budget %}</td><td class="num">{% include 'budget/_signed_money.html' with amount=line.spent %}</td><td class="num{% if line.remaining < 0 %} over{% endif %}">{% include 'budget/_signed_money.html' with amount=line.remaining %}{% if line.remaining < 0 %} over{% endif %}</td><td><meter min="0" max="100" value="{% if line.percent > 100 %}100{% else %}{{ line.percent }}{% endif %}"{% if line.percent > 100 %} class="over"{% endif %}>{{ line.percent }}%</meter> <span class="pct">{{ line.percent }}%</span></td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+
+<section class="card" id="cleanup" aria-labelledby="cleanup-h">
+  <h2 id="cleanup-h">Cleanup queue</h2>
+  <h3>Expenses with no merchant</h3>
+  {% if blank %}<ul class="rows">{% for expense in blank %}<li><span>{{ expense.date|date:"M j, Y" }} · {{ expense.category.name }} · {% include 'budget/_signed_money.html' with amount=expense.amount %}</span><a href="{% url 'transaction_edit' 'expense' expense.pk %}">Edit<span class="sr-only"> expense from {{ expense.date|date:"M j, Y" }}</span></a></li>{% endfor %}</ul>
+  {% else %}<p class="empty">Every expense has a merchant.</p>{% endif %}
+  <h3>Merchants spelled more than one way</h3>
+  {% if groups %}<ul class="rows spelling-groups">{% for group in groups %}<li>
+    <div><ul class="spellings">{% for name, count in group.spellings %}<li>{{ name }} ({{ count }})</li>{% endfor %}</ul></div>
+    <form method="post" action="{% url 'habit_unify' %}" class="unify-form">{% csrf_token %}
+      <input type="hidden" name="key" value="{{ group.key }}">
+      <label for="unify-{{ forloop.counter }}" class="sr-only">Name to use</label>
+      <select id="unify-{{ forloop.counter }}" name="name">{% for name, count in group.spellings %}<option value="{{ name }}"{% if name == group.suggested %} selected{% endif %}>{{ name }}</option>{% endfor %}</select>
+      <button type="submit">Use this name</button>
+    </form></li>{% endfor %}</ul>
+  {% else %}<p class="empty">No merchants are spelled inconsistently.</p>{% endif %}
+</section>
+{% endblock %}

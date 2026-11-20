@@ -1,0 +1,27 @@
+{% if field.name == 'split_transaction' and expense_split_formset %}
+  <fieldset class="split-fields" data-split-fields{% if not form.split_transaction.value %} hidden{% endif %}>
+    <legend>Category split</legend>
+    <p class="muted">Use a category once. The amounts must equal the total above.</p>
+    {{ expense_split_formset.management_form }}
+    {% if expense_split_formset.non_form_errors %}<div class="error" role="alert">{{ expense_split_formset.non_form_errors }}</div>{% endif %}
+    <div data-split-rows>
+      {% for split_form in expense_split_formset %}
+        <div class="split-row">
+          {% for hidden in split_form.hidden_fields %}{{ hidden }}{% endfor %}
+          <div class="field">{{ split_form.category.label_tag }}{{ split_form.category }}{{ split_form.category.errors }}</div>
+          <div class="field">{{ split_form.amount.label_tag }}{{ split_form.amount }}{{ split_form.amount.errors }}</div>
+          <button class="button split-remove" type="button" data-remove-split aria-label="Remove split row">Remove</button>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="split-left" data-split-left></p>
+    <button class="button" type="button" data-add-split>＋ Add another category</button>
+    <template data-empty-split>
+      <div class="split-row">
+        <div class="field">{{ expense_split_formset.empty_form.category.label_tag }}{{ expense_split_formset.empty_form.category }}</div>
+        <div class="field">{{ expense_split_formset.empty_form.amount.label_tag }}{{ expense_split_formset.empty_form.amount }}</div>
+        <button class="button split-remove" type="button" data-remove-split aria-label="Remove split row">Remove</button>
+      </div>
+    </template>
+  </fieldset>
+{% endif %}

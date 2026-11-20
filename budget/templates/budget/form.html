@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static budget_forms %}
+{% block extra_css %}{% if expense_split_formset %}<link rel="stylesheet" href="{% static 'budget/expense-splits.css' %}">{% endif %}{% if savings_formset %}<link rel="stylesheet" href="{% static 'budget/savings.css' %}?v=20260909-2">{% endif %}{% endblock %}
+{% block content %}
+<header class="pagehead"><div><a href="{{ return_url }}">← Back</a><h1>{{ title }}</h1></div></header>
+<section class="card form-card">
+  {% if add_type %}<nav aria-label="Type of entry"><ul class="type-switch"><li><a href="{% url 'expense_add' %}"{% if add_type == 'expense' %} aria-current="page"{% endif %}>Expense</a></li><li><a href="{% url 'income_add' %}"{% if add_type == 'income' %} aria-current="page"{% endif %}>Income</a></li><li><a href="{% url 'refund_add' %}"{% if add_type == 'refund' %} aria-current="page"{% endif %}>Refund</a></li><li><a href="{% url 'transfer_add' %}"{% if add_type == 'transfer' %} aria-current="page"{% endif %}>Transfer</a></li></ul></nav>{% endif %}
+  {% if allocation_help %}<p class="info">Allocations must equal the income total exactly. Nothing moves until you save. Leave them all blank to repeat the split used for the same source last time.</p>{% endif %}
+  {% if form.non_field_errors %}<div class="error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}<input type="hidden" name="return_url" value="{{ return_url }}">
+    {% for field in form.hidden_fields %}{{ field }}{% if field.errors %}<div class="error" role="alert">{{ field.errors }}</div>{% endif %}{% endfor %}
+    {% for field in form.main_fields|default:form.visible_fields %}{% include 'budget/_form_field.html' %}{% endfor %}
+    {% if form.more_fields %}<details class="more-options"{% if form.more_options_open %} open{% endif %}><summary>More options</summary>{% for field in form.more_fields %}{% include 'budget/_form_field.html' %}{% endfor %}</details>{% endif %}
+    {% include 'budget/_savings_allocation_fields.html' %}
+    {% if merchant_map is not None %}<datalist id="merchant-options">{% for name in merchant_names %}<option value="{{ name }}"></option>{% endfor %}</datalist>{% endif %}
+    {% if income_defaults is not None %}<datalist id="income-sources">{% for name in income_sources %}<option value="{{ name }}"></option>{% endfor %}</datalist>{% endif %}
+    <div class="form-actions">{% if add_another %}<button class="primary" type="submit">Save</button><button type="submit" name="add_another" value="1">Save and add another</button>{% else %}<button class="primary" type="submit">{{ title|submit_label }}</button>{% endif %}<a class="button" href="{{ return_url }}">Cancel</a></div>
+  </form>
+</section>
+{% if merchant_map is not None %}{{ merchant_map|json_script:"merchant-map" }}<script src="{% static 'budget/merchant-memory.js' %}" data-bound="{{ merchant_bound|yesno:'1,' }}" defer></script>{% endif %}
+{% if income_defaults is not None %}{{ income_defaults|json_script:"income-defaults" }}<script src="{% static 'budget/income-defaults.js' %}" data-bound="{{ income_bound|yesno:'1,' }}" defer></script>{% endif %}
+{% if expense_split_formset %}<script src="{% static 'budget/expense-splits.js' %}" defer></script>{% endif %}
+{% if savings_formset %}<script src="{% static 'budget/savings-allocations.js' %}" defer></script>{% endif %}
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/debts.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><h1>{{ page_titles.debts|default:'Debts' }}</h1></div><a class="button primary" href="{% url 'debt_add' %}">Add a debt</a></header>
+
+{% if cards %}
+<section class="card" aria-labelledby="debt-summary">
+  <h2 id="debt-summary">All debts</h2>
+  <dl class="debt-totals">
+    <div><dt>Estimated owed</dt><dd>{% include 'budget/_signed_money.html' with amount=total_owed %}</dd></div>
+    <div><dt>Monthly payments</dt><dd>{% include 'budget/_signed_money.html' with amount=total_payments %}</dd></div>
+  </dl>
+  <form method="get" class="debt-extra">
+    <div class="field"><label for="id_extra">Extra per month</label>
+      <input type="text" name="extra" id="id_extra" inputmode="decimal" autocomplete="off" spellcheck="false" value="{% if extra %}{{ extra }}{% endif %}"></div>
+    <button class="button">Compare</button>
+  </form>
+  <p class="debt-note">Extra money goes to the highest interest rate first, and when a debt is paid off its payment rolls over to the next.</p>
+  {% if comparison %}
+  <div class="table-scroll"><table class="debt-compare">
+    <caption class="sr-only">Payoff plan comparison</caption>
+    <thead><tr><th scope="col">Plan</th><th scope="col">Debt-free</th><th scope="col">Total interest</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Current payments</th>
+        <td>{% if comparison.baseline.months is None %}Not within 50 years{% else %}{{ comparison.baseline.months }} month{{ comparison.baseline.months|pluralize }} ({{ comparison.baseline_date|date:"M Y" }}){% endif %}</td>
+        <td>{% include 'budget/_signed_money.html' with amount=comparison.baseline.total_interest %}</td></tr>
+      <tr><th scope="row">With ${{ extra|floatformat:"2g" }} extra and rollover</th>
+        <td>{% if comparison.with_extra.months is None %}Not within 50 years{% else %}{{ comparison.with_extra.months }} month{{ comparison.with_extra.months|pluralize }} ({{ comparison.extra_date|date:"M Y" }}){% endif %}</td>
+        <td>{% include 'budget/_signed_money.html' with amount=comparison.with_extra.total_interest %}</td></tr>
+    </tbody>
+  </table></div>
+  {% if comparison.months_sooner is not None %}<p><strong>Debt-free {{ comparison.months_sooner }} month{{ comparison.months_sooner|pluralize }} sooner, {% include 'budget/_signed_money.html' with amount=comparison.interest_saved %} less interest.</strong></p>{% endif %}
+  {% if comparison.baseline.months is None and comparison.with_extra.months is not None %}<p><strong>With the extra you are debt-free in {{ comparison.with_extra.months }} month{{ comparison.with_extra.months|pluralize }}; at current payments some debt is never paid off.</strong></p>{% endif %}
+  {% else %}<p class="empty">Enter a balance and a payment on at least one debt to compare plans.</p>{% endif %}
+</section>
+{% endif %}
+
+{% for card in cards %}
+<article class="card debt-card" aria-labelledby="debt-{{ card.debt.pk }}">
+  <header class="debt-head">
+    <div><h2 id="debt-{{ card.debt.pk }}">{{ card.debt.name }}</h2><p>{{ card.debt.get_kind_display }} · {{ card.debt.apr|floatformat:"-3" }}% APR</p></div>
+    <div class="debt-actions">
+      <a class="button" href="{% url 'debt_balance_add' card.debt.pk %}">Enter balance</a>
+      <a class="button" href="{% url 'debt_edit' card.debt.pk %}">Edit</a>
+      <form method="post" action="{% url 'debt_archive' card.debt.pk %}">{% csrf_token %}<button class="button">Archive</button></form>
+    </div>
+  </header>
+  <p>Monthly payment: <strong>{% include 'budget/_signed_money.html' with amount=card.payment %}</strong> ({{ card.basis }})</p>
+  {% if card.bills %}<p>Linked bills: {% for bill in card.bills %}{{ bill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+  {% if card.estimate.entered %}
+    <p>Latest entered balance: {% include 'budget/_signed_money.html' with amount=card.estimate.entered.balance %} on {{ card.estimate.entered.as_of|date:"M j, Y" }}</p>
+    <p>Estimated balance now: <strong>{% include 'budget/_signed_money.html' with amount=card.estimate.estimate %}</strong></p>
+    <details><summary>How this is worked out</summary><p>{{ card.estimate.formula }}</p></details>
+    {% with p=card.projection %}
+    <p class="debt-projection">{% if p.months is None %}At {% include 'budget/_signed_money.html' with amount=card.payment %} a month this never pays off: interest is {% include 'budget/_signed_money.html' with amount=p.first_month_interest %} a month.{% else %}Paid off in {{ p.months }} month{{ p.months|pluralize }} ({{ p.payoff|date:"M Y" }}), {% include 'budget/_signed_money.html' with amount=p.total_interest %} interest.{% endif %}</p>
+    {% endwith %}
+  {% else %}
+    <p class="debt-prompt">No balance entered yet. <a href="{% url 'debt_balance_add' card.debt.pk %}">Enter the balance from your lender's statement</a> to see an estimate and payoff projection.</p>
+  {% endif %}
+  {% if card.history %}
+  <details><summary>Balance history ({{ card.history|length }})</summary>
+    <div class="table-scroll"><table class="debt-history"><thead><tr><th scope="col">Date</th><th scope="col">Balance</th><th scope="col">Notes</th></tr></thead><tbody>
+    {% for row in card.history %}<tr><td>{{ row.as_of|date:"M j, Y" }}</td><td>{% include 'budget/_signed_money.html' with amount=row.balance %}</td><td>{{ row.notes }}</td></tr>{% endfor %}
+    </tbody></table></div>
+  </details>
+  {% endif %}
+</article>
+{% empty %}
+<div class="card empty"><p>No debts yet. Add one to see where you stand and how fast it can be paid off.</p></div>
+{% endfor %}
+
+{% if archived %}
+<details class="card debt-archived"><summary>Archived debts ({{ archived|length }})</summary>
+  <ul>{% for debt in archived %}<li><span>{{ debt.name }}</span>
+    <form method="post" action="{% url 'debt_archive' debt.pk %}">{% csrf_token %}<input type="hidden" name="restore" value="1"><button class="button">Restore</button></form></li>{% endfor %}</ul>
+</details>
+{% endif %}
+{% endblock %}

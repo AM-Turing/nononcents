@@ -1,0 +1,12 @@
+.transaction-type {
+  color: var(--text);
+  display: block;
+  min-height: 7rem;
+  text-decoration: none;
+}
+
+.transaction-type strong {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: .4rem;
+}

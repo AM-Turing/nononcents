@@ -1,0 +1,13 @@
+.statements-page .muted, .statement-line .muted, p.muted { color: var(--sub); }
+.statement-list, .statement-lines, .statement-plain { list-style: none; margin: 0; padding: 0; }
+.statement-list li, .statement-plain li { border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; padding: 10px 0; }
+.statement-line { border-bottom: 1px solid var(--border); display: grid; gap: 8px; padding: 14px 0; }
+.statement-line p { margin: 0; }
+.statement-amount { font-size: 1.15rem; font-weight: 700; }
+.statement-proposal { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; justify-content: space-between; }
+.statement-missing { font-weight: 600; }
+.statement-bulk { margin-bottom: 12px; }
+.statement-line .button, .statement-plain .button, .statement-bulk .button { min-height: 44px; }
+.statement-line details ul { list-style: none; padding: 0; }
+.statement-line details li { padding: 6px 0; }
+@media (max-width: 700px) { .statement-proposal form, .statement-proposal .button { width: 100%; } }

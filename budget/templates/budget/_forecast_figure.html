@@ -1,0 +1,1 @@
+<details class="forecast-detail"><summary>Formula and inputs</summary><p>{{ fig.formula }}</p><ul>{% for row in fig.inputs %}<li>{{ row.label }}: <strong>{% include 'budget/_signed_money.html' with amount=row.amount %}</strong>{% if row.basis %} <small>{{ row.basis }}</small>{% endif %}</li>{% endfor %}</ul></details>

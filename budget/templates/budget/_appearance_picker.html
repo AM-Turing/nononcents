@@ -1,0 +1,8 @@
+<form action="{% url 'appearance' %}" method="post" class="appearance-picker{% if picker_class %} {{ picker_class }}{% endif %}" aria-label="{{ picker_label|default:'Appearance' }}">
+  {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><span class="appearance-label">Display Mode</span>
+  <div class="appearance-options">
+    <button type="submit" name="appearance" value="light" aria-label="Use light appearance" title="Light"><span aria-hidden="true">☀</span></button>
+    <button type="submit" name="appearance" value="dark" aria-label="Use dark appearance" title="Dark"><span aria-hidden="true">☾</span></button>
+    <button type="submit" name="appearance" value="system" aria-label="Use system appearance" title="System"><span aria-hidden="true">🖥</span></button>
+  </div>
+</form>

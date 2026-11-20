@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="pagehead"><div><h1>Manage pay periods</h1><p>Pay periods for {{ household.name }}</p></div><a class="button primary" href="{% url 'pay_period_add' %}">＋ Add pay period</a></header>
+<section class="card form-card">
+  <h2>Generate future pay periods</h2>
+  {% if pay_schedule %}<p>Current schedule: {{ pay_schedule.get_frequency_display }}{% if pay_schedule.frequency == 'semimonthly' %} on the 1st and 15th{% elif pay_schedule.frequency == 'monthly' %} on day {{ pay_schedule.nominal_days.0 }}{% endif %}.</p>{% else %}<p class="warning">Choose a frequency to configure this profile's schedule.</p>{% endif %}
+  <form method="post">{% csrf_token %}{{ generate_form.non_field_errors }}{% for field in generate_form %}<div class="field">{{ field.label_tag }}{{ field }}{% if field.help_text %}<small id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}{{ field.errors }}</div>{% endfor %}<button class="primary" type="submit">Save schedule and generate</button></form>
+</section>
+<section class="card">
+  <p>A period starts the day its paycheck lands. Mark the income as “This is the regular paycheck” when you record it and the period start moves to that date; the previous period ends the day before. Locked periods never move.</p>
+  <div class="table-wrap"><table><thead><tr><th>Period</th><th>Payday</th><th>Expected deposit</th><th>Paycheck landed</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+  {% for period in periods %}<tr><td><strong>{{ period.start_date }} – {{ period.end_date }}</strong>{% if period.is_exceptional %}<small>Exceptional period</small>{% endif %}</td><td>{{ period.nominal_payday }}</td><td>{{ period.expected_deposit_date }}</td><td>{{ period.actual_deposit_date|default:'Not recorded' }}</td><td><span class="status">{% if period.is_locked %}Locked{% else %}Open{% endif %}</span></td><td><div class="form-actions">{% if not period.is_locked %}<a class="button" href="{% url 'pay_period_edit' period.pk %}">Edit</a>{% endif %}<form method="post" action="{% url 'pay_period_lock' period.pk %}">{% csrf_token %}{% if not period.is_locked or user.is_staff %}<button type="submit">{% if period.is_locked %}Reopen{% else %}Lock{% endif %}</button>{% endif %}</form><a class="button" href="{% url 'budgets' %}?period={{ period.pk }}">Budget</a></div></td></tr>
+  {% empty %}<tr><td colspan="6" class="empty">No pay periods have been added for this profile.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

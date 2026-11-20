@@ -1,0 +1,31 @@
+/* Habits page. Uses the shared theme variables so light and dark both work. */
+.view-chips ul { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: 100px; background: var(--surface); color: var(--text); text-decoration: none; }
+.chip[aria-current="page"] { background: var(--primary); color: var(--primaryText); border-color: transparent; font-weight: 700; }
+.add-chip { color: var(--primary); }
+.card { margin-bottom: 16px; max-width: 100%; }
+.card h2 { margin-top: 0; }
+.table-scroll { overflow-x: auto; max-width: 100%; }
+.table-scroll table { min-width: 0; }
+.table-scroll:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+tfoot th, tfoot td { font-weight: 800; border-top: 2px solid var(--strong); }
+td.over { color: var(--danger); font-weight: 700; }
+meter { width: 100%; min-width: 80px; max-width: 160px; height: 14px; vertical-align: middle; }
+meter.over { accent-color: var(--danger); }
+.adjust-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.adjust-form .field { margin: 0; flex: 1 1 160px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--primary); }
+.spellings { list-style: none; margin: 0; padding: 0; }
+.rows li { flex-wrap: wrap; align-items: center; }
+.rows .spellings li { border: 0; padding: 2px 0; }
+.unify-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.unify-form select { min-height: 44px; max-width: 100%; border: 1px solid var(--strong); border-radius: .55rem; background: var(--bg); color: var(--text); padding: 8px; }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.checks label { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+.category-field { border: 1px solid var(--border); border-radius: .6rem; }
+.hint { color: var(--sub); margin: 0 0 8px; }
+.check-field { display: flex; align-items: center; gap: 8px; }
+.check-field label { margin: 0; }
+.check-field input { width: auto; min-height: 0; }
+.danger-button { min-height: 44px; border: 1px solid var(--danger); color: var(--danger); background: var(--surface); border-radius: .6rem; padding: .6rem 1rem; }

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/transaction-add.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead">
+  <div><h1>Add transaction</h1><p>Choose the type of activity to record.</p></div>
+</header>
+<section class="cards" aria-label="Transaction types">
+  <a class="card transaction-type" href="{% url 'expense_add' %}"><strong>Add expense</strong><small>Record Spending or Bills activity.</small></a>
+  <a class="card transaction-type" href="{% url 'income_add' %}"><strong>Add income</strong><small>Record income and allocate it across accounts.</small></a>
+  <a class="card transaction-type" href="{% url 'refund_add' %}"><strong>Add refund</strong><small>Reduce spending with returned funds.</small></a>
+  <a class="card transaction-type" href="{% url 'transfer_add' %}"><strong>Add transfer</strong><small>Transfer funds without changing income or spending.</small></a>
+</section>
+{% endblock %}

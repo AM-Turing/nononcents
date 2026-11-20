@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Set up NoNonCents{% endblock %}
+{% block content %}
+<section class="auth card">
+  <h1>Welcome to NoNonCents</h1>
+  <p class="muted">No budget profile exists yet. Name your first profile (for example your household). It starts with Spending, Bills and Savings accounts and a few categories. You can add more profiles and people later in Admin.</p>
+  <form method="post">{% csrf_token %}{{ form.non_field_errors }}
+    <div class="field">{{ form.name.label_tag }}{{ form.name }}{{ form.name.errors }}</div>
+    <button class="primary" type="submit">Create profile</button>
+  </form>
+  <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="link">Sign out</button></form>
+</section>
+{% endblock %}

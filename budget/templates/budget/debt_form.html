@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'budget/debts.css' %}">{% endblock %}
+{% block content %}
+<header class="pagehead"><div><a href="{% url 'debts' %}">← Back to debts</a><h1>{{ title }}</h1></div></header>
+<section class="card form-card">
+  {% if form.non_field_errors %}<div class="error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form.visible_fields %}
+      <div class="field">
+        {% if field.name == 'bills' %}<fieldset><legend>{{ field.label }}</legend>{% if field.field.queryset %}<details class="dropdown" data-bill-dropdown><summary data-summary>Choose bills ({{ field.value|default_if_none:''|length }} chosen)</summary><div class="dropdown-panel">{{ field }}</div></details>{% else %}<p>No active bills yet.</p>{% endif %}</fieldset>{% else %}{{ field.label_tag }}{{ field }}{% endif %}
+        {% if field.help_text %}<small id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}{{ field.errors }}
+      </div>
+    {% endfor %}
+    <button class="primary">Save</button>
+  </form>
+</section>
+<script src="{% static 'budget/debt-form.js' %}" defer></script>
+{% endblock %}

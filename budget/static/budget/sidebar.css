@@ -1,0 +1,53 @@
+@media (min-width: 1024px) {
+  .sidebar,
+  .content {
+    transition: margin-left .2s ease, width .2s ease;
+  }
+
+  .sidebar-head {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  .sidebar-head .brand {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .sidebar-toggle {
+    flex: 0 0 44px;
+    min-height: 44px;
+    padding: .5rem;
+  }
+
+  .sidebar-collapsed .sidebar {
+    align-items: center;
+    padding-inline: 10px;
+    width: 64px;
+  }
+
+  .sidebar-collapsed .sidebar-head .brand,
+  .sidebar-collapsed .sidebar > nav,
+  .sidebar-collapsed .sidebar > form {
+    display: none;
+  }
+
+  .sidebar-collapsed .content {
+    margin-left: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .content {
+    transition: none;
+  }
+}
+
+.sidebar nav a[aria-current="page"] {
+  background: var(--muted);
+  box-shadow: inset 4px 0 0 var(--primary);
+  font-weight: 700;
+}

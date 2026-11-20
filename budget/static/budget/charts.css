@@ -1,0 +1,36 @@
+/* Interactive charts (charts.js): Budget Outlook and the homepage. */
+.pie-chart,
+.daily-chart .line-chart { position: relative; }
+.category-pie-svg { display: block; height: auto; overflow: visible; width: 100%; }
+.category-pie-svg path { cursor: pointer; stroke: var(--surface); stroke-width: 1; transition: opacity .15s; }
+.category-pie-svg:has(path.is-active) path:not(.is-active) { opacity: .45; }
+.category-pie-svg path.is-active,
+.category-pie-svg path:focus-visible { outline: none; stroke: var(--text); stroke-width: 2.5; }
+.chart-legend li.is-active { font-weight: 700; }
+.chart-legend li.is-active :is(.legend-swatch, .swatch) { outline: 2px solid var(--text); outline-offset: 1px; }
+.chart-tip {
+  background: var(--text);
+  border-radius: .5rem;
+  color: var(--surface);
+  font-size: .85rem;
+  font-weight: 600;
+  max-width: 16rem;
+  padding: .35rem .6rem;
+  pointer-events: none;
+  position: absolute;
+  white-space: nowrap;
+  z-index: 2;
+}
+.chart-readout { color: var(--sub); font-size: .9rem; margin: .5rem 0 0; min-height: 1.4em; }
+/* Shown only once charts.js runs (the hidden attribute keeps it out otherwise). */
+.chart-zoom[hidden] { display: flex; margin: 0 0 .5rem; min-height: 40px; visibility: hidden; }
+.chart-zoom:not([hidden]) { display: flex; gap: .4rem; justify-content: flex-end; margin: 0 0 .5rem; }
+.chart-zoom button { font-size: 1.1rem; min-height: 40px; min-width: 44px; padding: .3rem .7rem; }
+.chart-zoom button[data-zoom="reset"] { font-size: .85rem; }
+.chart-zoom button:disabled { opacity: .45; cursor: default; }
+.daily-chart svg { cursor: crosshair; }
+.daily-chart svg:focus { outline: none; }
+.daily-chart svg:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.daily-guide { stroke: var(--sub); stroke-dasharray: 4 4; stroke-width: 2; }
+.daily-point.is-active { fill: #ffea00; stroke-width: 4; }
+.pie-chart { max-width: 260px; width: 100%; }

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="pagehead"><div><a href="{{ return_url }}">← Back</a><h1>{{ title }}</h1></div></header>
+<section class="card form-card">
+  <p class="warning">{{ warning }}</p>
+  {% if form.non_field_errors %}<div class="error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}{% if confirmed_flag %}<input type="hidden" name="confirmed" value="1">{% endif %}
+    {% for field in form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+    <div class="form-actions"><button class="primary" type="submit">{{ submit_label|default:'Delete' }}</button><a class="button" href="{{ return_url }}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

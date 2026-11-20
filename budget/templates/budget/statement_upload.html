@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="pagehead"><div><p class="eyebrow"><a href="{% url 'statements' %}">Statements</a></p><h1>Upload a statement</h1></div></header>
+<section class="card form-card" aria-labelledby="upload-heading">
+  <h2 id="upload-heading">Statement PDF</h2>
+  <p>Download the monthly statement PDF from your bank and choose it here. The app reads the rows for each account, checks that every row adds up to the balance the bank shows, and lists them for you to check. The PDF itself is not kept.</p>
+  {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="field"><label for="statement">Statement PDF (up to {{ max_mb }} MB)</label><input id="statement" name="statement" type="file" accept="application/pdf,.pdf" required></div>
+    <div class="form-actions"><button type="submit" class="button primary">Read statement</button><a class="button" href="{% url 'statements' %}">Cancel</a></div>
+  </form>
+</section>
+{% endblock %}

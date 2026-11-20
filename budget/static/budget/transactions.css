@@ -1,0 +1,246 @@
+.transaction-list {
+  display: none;
+}
+
+/* Eight columns sized to their content: the type badge and notes sit in the Description
+   cell, which takes the remaining width and wraps; dates, amounts and buttons never wrap. */
+.transaction-table table {
+  width: 100%;
+}
+
+.transaction-table th,
+.transaction-table td {
+  overflow-wrap: break-word;
+  vertical-align: middle;
+}
+
+.transaction-table th:first-child,
+.transaction-table td:first-child,
+.transaction-table .num {
+  white-space: nowrap;
+}
+
+.transaction-table .col-description {
+  min-width: 12rem;
+  width: 40%;
+}
+
+.transaction-table .row-notes {
+  color: var(--sub);
+  display: block;
+  font-size: .875rem;
+  margin-top: .15rem;
+}
+
+.transaction-table td.num {
+  padding-right: 20px;
+}
+
+.transaction-table th:last-child,
+.transaction-table td:last-child {
+  padding-left: 20px;
+}
+
+.transaction-table td:last-child .form-actions {
+  flex-wrap: nowrap;
+}
+
+.transaction-table td:last-child .button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: .4rem .6rem;
+  white-space: nowrap;
+}
+
+.transaction-table .status,
+.transaction-item .status {
+  white-space: nowrap;
+}
+
+.transaction-date-shell {
+  background: var(--bg);
+  border: 1px solid var(--strong);
+  border-radius: .55rem;
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+.transaction-date-shell input {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  width: 100%;
+}
+
+.transaction-date-shell:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.transaction-date-shell input:focus-visible {
+  outline: 0;
+}
+
+.transaction-date-shell input::-webkit-date-and-time-value,
+.transaction-date-shell input::-webkit-datetime-edit {
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+}
+
+/* The table needs about 1,050px of card width; below that, the card list is used. */
+@media (max-width: 1399px) {
+  .transaction-table {
+    display: none;
+  }
+
+  .transaction-list {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .transaction-item {
+    border: 1px solid var(--border);
+    border-radius: .75rem;
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .transaction-item-head,
+  .transaction-item-head > div {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .transaction-item-head time {
+    font-weight: 700;
+  }
+
+  .transaction-item dl {
+    display: grid;
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .transaction-item dt {
+    color: var(--sub);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .transaction-item dd {
+    margin: 2px 0 0;
+    overflow-wrap: break-word;
+  }
+
+  .transaction-item-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1199px) {
+  .transaction-filters {
+    align-items: end;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .transaction-search {
+    grid-column: 1 / -1;
+  }
+
+  .transaction-filters label,
+  .transaction-filters button,
+  .transaction-filters .button {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .transaction-pagehead {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .transaction-page-actions,
+  .transaction-page-actions > * {
+    width: 100%;
+  }
+
+  .transaction-filters {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 8px;
+  }
+
+  .transaction-filters label,
+  .transaction-filters button,
+  .transaction-filters .button {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .transaction-list {
+    display: block;
+  }
+
+  .transaction-item {
+    border: 0;
+    border-radius: 0;
+    border-top: 1px solid var(--border);
+    padding: 18px 0;
+  }
+
+  .transaction-item:first-child {
+    border-top: 0;
+  }
+
+}
+
+/* Filter controls: label above, every control the same size. */
+.transaction-filters label {
+  display: block;
+}
+
+.transaction-filters select,
+.transaction-filters input[type="search"] {
+  background: var(--bg);
+  border: 1px solid var(--strong);
+  border-radius: .55rem;
+  color: var(--text);
+  display: block;
+  inline-size: 100%;
+  margin-top: 6px;
+  max-inline-size: 100%;
+  min-block-size: 46px;
+  min-inline-size: 0;
+  padding: 10px;
+  width: 100%;
+}
+
+.transaction-filters .transaction-date-shell {
+  margin-top: 6px;
+  min-block-size: 46px;
+}
+
+.transaction-filters label {
+  flex: 1 1 11rem;
+}
+
+.transaction-filters label.transaction-search {
+  flex: 2 1 16rem;
+}

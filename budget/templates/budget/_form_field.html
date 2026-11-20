@@ -1,0 +1,4 @@
+<div class="field{% if field.name == 'category' and expense_split_formset %} primary-category-field{% elif field.name == 'split_transaction' %} split-toggle-field{% endif %}">
+  {% if field.widget_type == 'checkbox' %}<label class="check-label" for="{{ field.id_for_label }}">{{ field }} {{ field.label }}</label>{% else %}{{ field.label_tag }}{{ field }}{% endif %}{% if field.help_text %}<small id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}{{ field.errors }}
+</div>
+{% include 'budget/_expense_split_fields.html' %}
