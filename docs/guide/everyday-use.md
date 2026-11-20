@@ -156,8 +156,9 @@ When bills are waiting, Home shows **Action needed: N bills need confirmation**.
 - Select **Confirm all unchanged** to confirm every unconfirmed bill at the amount shown. The
   message says how many bills were confirmed. If some were skipped because their pay period is
   locked, it also says how many.
-- If an amount is different this month, select **Edit bill**, change **Amount for this month**
-  and save. Tick **Use this amount for future months too** only if it has changed for good.
+- If an amount is different this month, open **More** on that bill's row, select **Edit bill**,
+  change **Amount for this month** and save. Tick **Use this amount for future months too**
+  only if it has changed for good.
 
 ### Mark a bill paid
 
@@ -194,10 +195,11 @@ A part payment shows the bill as **Partially paid**, with the amount still owing
 
 ### Skip a month or stop a bill
 
-- **Skip**: nothing is due this month. Enter a **Reason for skipping**, then **Skip this
-  month**.
-- **Remove**: the bill has ended. It is removed from the selected month onward; months already
-  paid are kept. Unpaid months before the selected month stay on Bills, and you can still pay them.
+- **Skip**: nothing is due this month. On the bill's row, select **Skip**, which sits next to
+  **Confirm**. Enter a **Reason for skipping**, then **Skip this month**.
+- **Remove**: the bill has ended. On the bill's row, open **More**, then select **Remove**. It is
+  removed from the selected month onward; months already paid are kept. Unpaid months before
+  the selected month stay on Bills, and you can still pay them.
 
 ### Older unpaid bills
 
@@ -266,7 +268,9 @@ Once a month, when your bank statement is ready:
 
 1. Open **Statement check** from the menu (on a phone: **More → Statement check**). Select
    **Upload a statement PDF**, choose the PDF and select
-   **Read statement**.
+   **Read statement**. The PDF must be the bank's own statement, not a scan or a photo. If the
+   app refuses it, or says a statement is **not verified**, see
+   [Troubleshooting](troubleshooting.md#a-statement-is-refused).
 2. Work through **To review**: **Same purchase** for each correct pair, **Add as new entry**
    for anything you forgot, **Dismiss** for anything that is not yours to record.
 3. Look at **Not on a statement yet**. Recent entries usually show next month; old ones may be

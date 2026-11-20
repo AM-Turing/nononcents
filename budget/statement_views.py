@@ -135,8 +135,9 @@ def _section_to_json(section: ParsedSection) -> dict:
         "suffix": section.account_suffix,
         "start": section.period_start.isoformat(),
         "end": section.period_end.isoformat(),
-        "opening": str(section.opening_balance),
-        "closing": str(section.closing_balance),
+        "opening": None if section.opening_balance is None else str(section.opening_balance),
+        "closing": None if section.closing_balance is None else str(section.closing_balance),
+        "verified": section.verified,
         "lines": [[ln.date.isoformat(), str(ln.amount), ln.description] for ln in section.lines],
     }
 
@@ -147,8 +148,9 @@ def _section_from_json(data: dict) -> ParsedSection:
         account_suffix=data["suffix"],
         period_start=date.fromisoformat(data["start"]),
         period_end=date.fromisoformat(data["end"]),
-        opening_balance=Decimal(data["opening"]),
-        closing_balance=Decimal(data["closing"]),
+        opening_balance=None if data["opening"] is None else Decimal(data["opening"]),
+        closing_balance=None if data["closing"] is None else Decimal(data["closing"]),
+        verified=data.get("verified", True),
         lines=[ParsedLine(date.fromisoformat(d), Decimal(a), t) for d, a, t in data["lines"]],
     )
 
@@ -175,6 +177,13 @@ def _stage_all(request, home, sha, pairs):
     messages.success(
         request, f"Statement read for {names}: {created} new line{plural} to check.{note}"
     )
+    loose = [account.name for account, section in pairs if not section.verified]
+    if loose:
+        messages.warning(
+            request,
+            f"Not verified for {', '.join(loose)}: the statement had no balances to add the "
+            "lines up against. Check each line.",
+        )
 
 
 def _accounts(home):
@@ -269,7 +278,10 @@ def statement_map(request):
         try:
             with transaction.atomic():
                 for account, section in pairs:
-                    if account.statement_suffix != section.account_suffix:
+                    if (
+                        section.account_suffix
+                        and account.statement_suffix != section.account_suffix
+                    ):
                         Account.objects.filter(
                             household=home, statement_suffix=section.account_suffix
                         ).update(statement_suffix="")

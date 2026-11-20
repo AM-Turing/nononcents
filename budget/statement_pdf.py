@@ -1,6 +1,9 @@
-"""Read bank statement PDFs in the supported statement layout into statement sections.
+"""Read bank statement PDFs into statement sections.
 
-Layout of the supported statement format:
+This module holds one specific layout, read by its own rules, and the PDF safety limits. A
+statement in any other layout goes to the generic reader in ``statement_generic``.
+
+Layout:
 
 * "Statement Period" followed by ``MM/DD/YY - MM/DD/YY``.
 * One section per account, headed ``<Account name> - <account number>``; a section that
@@ -38,6 +41,7 @@ ROW = re.compile(r"^(?P<month>\d{2})-(?P<day>\d{2})\s+(?P<rest>.*)$")
 MONEY = r"\d{1,3}(?:,\d{3})*\.\d{2}"
 # The money-out minus may touch the amount ("2.99-") or stand apart ("2.99 - 546.18").
 AMOUNTS = re.compile(rf"(?P<amount>{MONEY})(?:\s*(?P<out>-))?\s+(?P<balance>-?{MONEY}-?)\s*$")
+KNOWN_ROW = re.compile(r"^\d{2}-\d{2}\s+beginning balance\b", re.I | re.M)
 SINGLE = re.compile(rf"(?P<balance>-?{MONEY}-?)\s*$")
 TABLE_END = (
     "average daily balance",
@@ -66,8 +70,22 @@ class _Section:
         self.rows: list[tuple[int, int, str, Decimal, Decimal]] = []
 
 
+def _is_known_layout(pages: list[str]) -> bool:
+    text = "\n".join(pages)
+    if not (PERIOD.search(text) and KNOWN_ROW.search(text)):
+        return False
+    return any(SECTION.match(" ".join(line.split())) for line in text.splitlines())
+
+
 def parse_statement_pages(pages: list[str]) -> list[ParsedSection]:
-    """Parse the text of each page (in order) into one section per account."""
+    """Parse the text of each page (in order) into one section per account.
+
+    The known layout is tried first; any other statement uses the generic reader.
+    """
+    if not _is_known_layout(pages):
+        from .statement_generic import parse_generic_pages
+
+        return parse_generic_pages(pages)
     period = None
     for text in pages:
         match = PERIOD.search(text)
@@ -204,4 +222,9 @@ def parse_statement_pdf(data: bytes) -> list[ParsedSection]:
             "Statement PDF could not be read: %s", type(exc).__name__
         )
         raise StatementParseError("The PDF could not be read.") from exc
+    if not any(page.strip() for page in pages):
+        raise StatementParseError(
+            "This PDF has no readable text. It may be a scan or a photo; download the "
+            "statement itself from your bank (not a scan) and upload that."
+        )
     return parse_statement_pages(pages)

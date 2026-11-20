@@ -259,7 +259,7 @@ The bill now appears on **Bills** in every month it is due.
 
 ### Change how often a bill is due
 
-1. On **Bills**, select **Edit bill** on any month of that bill.
+1. On **Bills**, open **More** on any month of that bill, then select **Edit bill**.
 2. Under **How often**, choose the new schedule.
 3. Under **First due month**, choose the first month of the new schedule.
 4. Select **Save changes**.
@@ -267,7 +267,7 @@ The bill now appears on **Bills** in every month it is due.
 From today on, unpaid months that no longer fit are removed; paid, skipped and past months are
 kept. The message after saving says how many months were removed and kept.
 
-![The Bills page for one month, showing each bill's status and its Confirm, Paid, Edit bill, Skip and Remove buttons](images/bills.png)
+![The Bills page for one month, showing each bill's status, a full-width Paid button, Confirm and Skip side by side, and a More menu with Edit bill and Remove](images/bills.png)
 
 ## Add your debts
 
@@ -304,8 +304,8 @@ statement, pairs each line with an entry you recorded, and shows what is left ov
 
 ### Upload a statement
 
-1. Download this month's statement PDF from your bank's website (one PDF covers all your
-   accounts).
+1. Download the monthly statement PDF from your bank (not a scan or a photo). PDF statements from
+   most banks work. One PDF covers all your accounts.
 2. Open **Statement check** in the menu, just below **Accounts** (on a phone: **More →
    Statement check**).
 3. Select **Upload a statement PDF**.
@@ -313,9 +313,15 @@ statement, pairs each line with an entry you recorded, and shows what is left ov
 
 Statement PDFs longer than 50 pages are refused. Upload one statement at a time.
 
-The app checks every row against the running balance printed by the bank. If anything does
-not add up, nothing is imported and the page says which account and date failed. The PDF
-itself is not kept.
+The app checks the rows against the balances printed on the statement: each running balance
+must follow from the one before, and the opening balance plus all the rows must equal the
+closing balance. If anything does not add up, nothing is imported; the page names the account
+and says what failed, and ends "Nothing was imported." If the statement has no balances to
+check against, the lines are still read but marked **not verified** (see below). The PDF itself
+is not kept.
+
+A PDF with no text in it, such as a scan or a photo of a statement, is refused with a message
+asking you to download the statement from your bank instead.
 
 ![The Upload a statement page with the Statement PDF file box and the Read statement button](images/statement-upload.png)
 
@@ -326,6 +332,9 @@ statement (shown with its name, number of rows and ending balance), choose the m
 account, or **Don't import this account**. Then select **Import statement**.
 
 To stop without importing, select **Cancel**. The app discards the uploaded statement, and nothing is imported.
+
+If a statement does not show an account number, the app cannot remember the account, so it asks
+each time.
 
 The app remembers the last 4 digits of each bank account number, so it only asks once. Next
 time it files every account by itself. You can see or change the remembered digits at any time
@@ -343,6 +352,11 @@ same account for the same amount, dated up to 7 days before or 3 days after the 
   recorded.
 - **Dismiss** sets a line aside without matching it.
 - **Undo**, under **Reviewed**, puts a line back to review.
+
+**Not verified** means the app could not add the statement's lines up against any balance on
+it. Then the account-choice page says **not verified: check each line**, the import shows a warning
+"Not verified for …", the statement list says **not verified**, and the review page starts with
+a **Not verified.** banner. Check every line against your bank's website before you match it.
 
 A line marked "Possibly missed" has no entry nearby: you probably forgot to record it.
 **Not on a statement yet** lists your entries the bank has not shown yet; recent ones usually

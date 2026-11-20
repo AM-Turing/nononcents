@@ -3,10 +3,10 @@
 <header class="pagehead"><div><p class="eyebrow"><a href="{% url 'statements' %}">Statements</a></p><h1>Which account is which?</h1></div></header>
 <section class="card form-card" aria-labelledby="map-heading">
   <h2 id="map-heading">Match each bank account to an app account</h2>
-  <p>This is asked once; the app remembers the last 4 digits of each bank account number.</p>
+  <p>{% if rows|length == 1 and not rows.0.section.account_suffix %}The statement did not show an account number, so it is asked each time.{% else %}This is asked once; the app remembers the last 4 digits of each bank account number.{% endif %}</p>
   <form method="post">{% csrf_token %}
     {% for row in rows %}<div class="field">
-      <label for="account_{{ row.index }}">{{ row.section.account_label }} <small>{{ row.section.lines|length }} row{{ row.section.lines|length|pluralize }} · ending balance ${{ row.section.closing_balance|floatformat:"2g" }}</small></label>
+      <label for="account_{{ row.index }}">{{ row.section.account_label }} <small>{{ row.section.lines|length }} row{{ row.section.lines|length|pluralize }}{% if row.section.closing_balance is not None %} · ending balance ${{ row.section.closing_balance|floatformat:"2g" }}{% endif %}{% if not row.section.verified %} · <strong>not verified: check each line</strong>{% endif %}</small></label>
       <select id="account_{{ row.index }}" name="account_{{ row.index }}" required>
         <option value="">Choose…</option>
         {% for account in accounts %}<option value="{{ account.pk }}"{% if row.account and row.account.pk == account.pk %} selected{% endif %}>{{ account.name }}</option>{% endfor %}

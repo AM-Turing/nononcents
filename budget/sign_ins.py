@@ -7,7 +7,7 @@ or device is locked out) are not recorded, so the log cannot grow without limit.
 
 from django.contrib.auth import get_user_model
 
-from . import login_throttle
+from . import activity_log, login_throttle
 from .models import AuditEvent, Household
 
 
@@ -25,6 +25,7 @@ def record_sign_in(request, user, profile):
         action=AuditEvent.Action.LOGIN,
         changes={"profile": profile.name if profile else "", "ip": client_ip(request)},
     )
+    activity_log.prune_daily_after_commit(profile)
 
 
 def record_failed_sign_in(request, form):
@@ -61,3 +62,4 @@ def record_failed_sign_in(request, form):
         action=AuditEvent.Action.LOGIN_FAILED,
         changes=changes,
     )
+    activity_log.prune_daily_after_commit(profile)

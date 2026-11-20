@@ -52,7 +52,19 @@ html[data-theme="system"] .appearance-options button[value="system"] { border: 2
 .setup-checklist li.done a { color: var(--sub); text-decoration: line-through; }
 
 /* History filters: collapsed on phones, always shown from 640px */
-.filter-details > summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; color: var(--primary); }
+.filter-details > summary { cursor: pointer; font-weight: 700; font-size: 1.125rem; min-height: 44px; display: flex; align-items: center; color: var(--primary); list-style: none; }
+/* One open/closed indicator for drop-downs whose summary is a flex row (which hides the
+   browser's own marker): the same ▾/▴ as the Bills "More" menu. */
+.filter-details > summary, .more-options > summary, .forecast-detail > summary,
+.debt-card details > summary, .debt-archived > summary { list-style: none; }
+.filter-details > summary::-webkit-details-marker, .more-options > summary::-webkit-details-marker,
+.forecast-detail > summary::-webkit-details-marker, .debt-card details > summary::-webkit-details-marker,
+.debt-archived > summary::-webkit-details-marker { display: none; }
+.filter-details > summary::after, .more-options > summary::after, .forecast-detail > summary::after,
+.debt-card details > summary::after, .debt-archived > summary::after { content: "▾"; margin-left: .4rem; }
+.filter-details[open] > summary::after, .more-options[open] > summary::after,
+.forecast-detail[open] > summary::after, .debt-card details[open] > summary::after,
+.debt-archived[open] > summary::after { content: "▴"; }
 .filter-details[data-wide] > summary { display: none; }
 
 /* Bare text links get a 44px tap height without looking like buttons. */

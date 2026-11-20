@@ -12,7 +12,7 @@
   <h2 id="statements-heading">Imported statements</h2>
   {% if statements %}<ul class="statement-list">{% for st in statements %}<li>
     <a href="{% url 'statement_review' st.pk %}">{{ st.account.name }} · {{ st.period_start|date:"M j" }} – {{ st.period_end|date:"M j, Y" }}</a>
-    <span>{{ st.line_count }} line{{ st.line_count|pluralize }}{% if st.pending_count %} · <strong>{{ st.pending_count }} to review</strong>{% else %} · all reviewed{% endif %}</span>
+    <span>{{ st.line_count }} line{{ st.line_count|pluralize }}{% if not st.verified %} · <strong>not verified</strong>{% endif %}{% if st.pending_count %} · <strong>{{ st.pending_count }} to review</strong>{% else %} · all reviewed{% endif %}</span>
   </li>{% endfor %}</ul>{% else %}<p class="empty">No statements imported yet.</p>{% endif %}
 </section>
 {% endblock %}

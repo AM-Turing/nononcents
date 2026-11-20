@@ -166,6 +166,8 @@ BACKUP_STATUS_FILE = Path(
     os.environ.get("BACKUP_STATUS_FILE", "/var/lib/nononcents/backup-status/backup-status.json")
 )
 BACKUP_MAX_AGE_HOURS = max(1, min(int(os.environ.get("BACKUP_MAX_AGE_HOURS", "26")), 720))
+# Days to keep activity-log entries; 0 keeps them forever.
+ACTIVITY_LOG_RETENTION_DAYS = max(0, int(os.environ.get("ACTIVITY_LOG_RETENTION_DAYS", "60")))
 REPORT_LLM_PROVIDER = os.environ.get("REPORT_LLM_PROVIDER", "disabled")
 REPORT_LLM_URL = os.environ.get("REPORT_LLM_URL", "")
 REPORT_LLM_MODEL = os.environ.get("REPORT_LLM_MODEL", "")

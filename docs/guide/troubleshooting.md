@@ -38,7 +38,8 @@ and today's balances. A wrong figure in any of them changes the result.
 1. Tap **How this is worked out** on the card and check each line.
 2. If the paycheck or spending target is wrong, use **Edit paycheck or spending target** on
    the Bills card.
-3. If a bill amount is wrong, fix that month on **Bills** with **Edit bill**.
+3. If a bill amount is wrong, fix that month on **Bills**: open **More** on the bill's row, then
+   select **Edit bill**.
 4. Check for "older unpaid bills need review": they are left out of the figures until you deal
    with them.
 5. Read [Understanding the numbers](understanding-the-numbers.md) for what each line means.
@@ -69,10 +70,10 @@ Check next month's bills on **Bills** for a bill counted twice or an amount that
 
 **What to do:**
 
-- **Twice:** on **Bills**, select **Remove** on the duplicate bill from the first month it is
-  wrong. Months that already have a payment are kept.
-- **Missing:** select **Edit bill** on a month where it does show, and check **How often** and
-  **First due month**. If it shows nowhere, add it again with **＋ Add bill**.
+- **Twice:** on **Bills**, open **More** on the duplicate bill's row and select **Remove**, from
+  the first month it is wrong. Months that already have a payment are kept.
+- **Missing:** open **More** on a month where it does show and select **Edit bill**, and check
+  **How often** and **First due month**. If it shows nowhere, add it again with **＋ Add bill**.
 - **Still unpaid after paying:** use **Paid $…** for a full payment, or edit the payment in
   **History** and choose the bill under **Apply payment to bill (optional)** and the right
   **Bill month (optional)**.
@@ -150,7 +151,32 @@ The page says why. The usual messages:
 | "The PDF is password-protected; download it again unlocked." | Download it again without a password. |
 | "The file is larger than 10 MB." | Download just the one month's statement. |
 | "No statement period was found. Is this a bank statement?" or "No account sections were found" | Make sure it is the monthly *statement of account* from your bank, not a receipt or tax form. |
-| A message naming an account and a date, ending "Nothing was imported." | A row didn't add up to the balance the bank printed. Download the PDF again and retry; if it fails again, ask your administrator. |
+| A message naming an account, ending "Nothing was imported." | The statement was refused; see [A statement is refused](#a-statement-is-refused). |
+
+### A statement is refused
+
+**What it means:** the rows did not add up to the balances on the statement, so the app
+imported none of them. The message names the account, then says what failed:
+
+- "…a row does not add up to the balance shown. Nothing was imported." or "…the rows do not add
+  up to the ending balance. Nothing was imported." The app read a line or a total differently from
+  the bank.
+- "…could not tell which lines are money in and which are money out. Nothing was imported." The
+  statement's columns or headings did not show the direction of the lines.
+- "The dates on this statement mix day-first and month-first." Some dates read as day/month and
+  others as month/day.
+- "No transaction rows were recognised in this statement. Nothing was imported."
+
+**What to do:** download the statement from your bank again as a PDF and upload it again. If it is
+refused again, ask your administrator.
+
+### No readable text in the PDF
+
+**What it means:** the file has no text the app can read. It is a scan, a photo, or a page
+printed as an image.
+
+**What to do:** download the statement itself from your bank's website as a PDF, and upload that
+file. Do not upload a photo or a scan of a printed copy.
 
 ### The statement went to the wrong account
 

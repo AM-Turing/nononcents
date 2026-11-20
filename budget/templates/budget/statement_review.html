@@ -4,6 +4,7 @@
 {% block content %}
 <header class="pagehead"><div><p class="eyebrow"><a href="{% url 'statements' %}">Statements</a></p><h1>{{ statement.account.name }} · {{ statement.period_start|date:"M j" }} – {{ statement.period_end|date:"M j, Y" }}</h1></div></header>
 
+{% if not statement.verified %}<p class="notice warning" role="note"><strong>Not verified.</strong> This statement had no balances the lines could be added up against, so check each line yourself.</p>{% endif %}
 {% if statement.closing_balance is not None %}<section class="card" aria-labelledby="balance-heading">
   <h2 id="balance-heading">Balance on {{ statement.period_end|date:"M j" }}</h2>
   <p>Bank: {% include 'budget/_signed_money.html' with amount=statement.closing_balance %} · App: {% include 'budget/_signed_money.html' with amount=review.ledger_at_end %} · {% if review.balance_difference == 0 %}<strong>they agree.</strong>{% else %}<strong>difference {% include 'budget/_signed_money.html' with amount=review.balance_difference %}</strong>. Reviewing the lines below usually explains it; anything left can be settled from <a href="{% url 'account_reconcile' statement.account.pk %}">Reconcile</a>.{% endif %}</p>

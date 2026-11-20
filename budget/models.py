@@ -445,6 +445,8 @@ class StatementImport(models.Model):
     period_start = models.DateField()
     period_end = models.DateField()
     closing_balance = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    # False when the rows could not be added up against any balance on the statement.
+    verified = models.BooleanField(default=True)
     file_sha256 = models.CharField(max_length=64)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)

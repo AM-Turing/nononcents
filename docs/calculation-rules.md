@@ -460,18 +460,82 @@ income with the same source.
 
 ## Statement PDF reading
 
-Implemented in `budget/statement_pdf.py` for the supported statement layout (other banks may need their own parser). The
-period comes from the `MM/DD/YY - MM/DD/YY` header; each `<name> - <number>` heading starts
-(or continues) an account section; rows are `MM-DD detail amount[-] balance`, a trailing
-`-` meaning money out; wrapped details are joined; "Items Paid" tables and text after
-"Average Daily Balance" are skipped. A row's year is the period end's year, or the year
-before if that date would fall after the period end; a row dated outside the period is
-refused. Each account section needs both a Beginning and an Ending Balance row. **Every row
-must satisfy previous balance + amount = printed balance, and the last must equal the ending
-balance**; otherwise the whole upload is refused. Files over 10 MB, files that do not start
-with `%PDF-`, and password-protected PDFs are refused before reading. Each section's account
-ending is the last 4 digits of its account number. `check_statement_pdf FILE` runs the same
-reading without saving.
+Implemented in `budget/statement_pdf.py` (the dispatcher and the known layout) and
+`budget/statement_generic.py` (the generic reader). Files over 10 MB, files that do not start
+with `%PDF-`, password-protected PDFs and PDFs over 50 pages are refused before reading. A PDF
+with no text at all (a scan or a photo) is refused with a message asking for the bank's own PDF.
+`check_statement_pdf FILE` runs the same reading without saving.
+
+**Order.** The known layout is tried first and is unchanged: a statement that has a statement
+period, a `MM-DD Beginning balance` row and an account heading in that layout is read as before.
+Any other statement goes to the generic reader. The known layout's rules are these: the period
+comes from the `MM/DD/YY - MM/DD/YY` header; each `<name> - <number>` heading starts (or
+continues) an account section; rows are `MM-DD detail amount[-] balance`, a trailing `-` meaning
+money out; wrapped details are joined; "Items Paid" tables and text after "Average Daily Balance"
+are skipped. A row's year is the period end's year, or the year before if that date would fall
+after the period end; a row dated outside the period is refused. Each account section needs both a
+Beginning and an Ending Balance row, and **every row must satisfy previous balance + amount =
+printed balance, and the last must equal the ending balance**; otherwise the whole upload is
+refused.
+
+**Generic reader.** It works on the layout-preserved text and looks for what most statements
+have, not for one bank's layout.
+
+- *Period.* A range such as `Jan 1 - Jan 31, 2026` or `01/01/2026 - 01/31/2026`, or a lone
+  statement, closing or billing date. Numeric dates are month/day unless a first part above 12
+  shows day/month; a statement that mixes both is refused. A row without a year takes the period
+  end's year, or the year before, whichever puts it inside the period (year rollover). A row with
+  two dates (transaction and posting) is placed by the posting date. A row dated outside the
+  period is left out and counted as unread.
+- *Accounts.* A heading with "ending in 1234", "account ...1234", "xxxx1234", "...1234" or a long
+  number ending in 4 digits starts a section. Its name is the text before the digits, or the line
+  above when that line has no digits. The last 4 digits are the section's account ending. Rows
+  before any heading form a section of their own, with no ending. Balances found before any
+  heading are used for the only account section when there is exactly one.
+- *Balances.* Labels such as "Beginning / opening / previous / starting balance", "balance brought
+  forward", "Ending / closing / new / final balance" and "balance carried forward". A label that
+  appears twice with different figures is not trusted.
+- *Amounts.* Signed (`-12.34`, `+12.34`), trailing minus, `CR`/`DR`, and parentheses for money out.
+  Amounts need two cents. A header row with Withdrawals/Debits/Paid out/Charges and
+  Deposits/Credits/Paid in, plus Balance or Amount, sets debit and credit columns; a row's column is
+  the header nearest to where its amount sits. Without a header, a row with two amounts is an
+  amount and a running balance; with three or more it is unreadable.
+- *Direction.* In order: an explicit sign, CR/DR or parentheses; the debit or credit column; the
+  change in the running balance (when it equals the amount); a short section heading such as
+  "Deposits and other credits" or "Withdrawals" above the rows. If none decides it, the upload is
+  refused.
+- *Running balance.* When a row shows the balance after it, that balance is used to check the
+  rows.
+- *Skipped tables.* Daily-balance, items-paid, check-image, average-daily-balance, interest,
+  fee-summary, year-to-date, disclosure and rewards tables are not read until a transaction
+  heading ("Transaction detail/history/activity", "Account activity"), a new account heading, a
+  column header or a Deposits/Withdrawals heading appears. Total lines and page numbers are ignored. A wrapped description is joined
+  to its row.
+- *Card statements.* Purchases can appear as positive amounts that raise the balance. When the
+  rows show no running balance and opening − rows = closing, the balances are accepted and stored
+  with their signs reversed, so the rows keep their money-out signs.
+
+**Verification.** Every running balance is checked (previous balance + row = printed balance), and
+when both balances are known, opening balance + all rows must equal the closing balance (or the
+last running balance must equal the closing balance when only that is known). **Any mismatch
+refuses the whole file**, with a message naming the account and the reason, and the text "Nothing
+was imported." A section whose direction cannot be decided is refused with "could not tell which
+lines are money in and which are money out. Nothing was imported."
+
+A section is **verified** only when at least one of these checks ran and nothing was left unread
+(or both balances were found). When no balance can be checked against, the lines are still read
+and staged, marked **not verified** (`StatementImport.verified` is False; see
+[Statement check matching](#statement-check-matching)). You must then check each line.
+
+**Known limits** (the reader refuses or leaves out rather than guessing where it can):
+
+- scanned PDFs and photographs (no text to read);
+- several rows that share one date heading (a row needs its own date);
+- two transactions side by side on one line, and column headers that wrap onto two lines;
+- statements in other languages or currencies;
+- amounts without cents;
+- statements that mix day-first and month-first dates;
+- horizontal summary tables that are not transaction lists.
 
 ## Statement check matching
 
@@ -484,7 +548,9 @@ one account, and a line only ever matches entries on that account.
   has a matching ending, it is staged straight away. Otherwise **Which account is which?**
   asks, suggesting the remembered account or, for a bank section named "saving…", the
   Savings-type account. Each section needs a different account or **skip**. Confirming saves
-  the ending on the chosen account and clears it from any other account in the profile. The
+  the ending on the chosen account and clears it from any other account in the profile.
+  A section with no account number is never saved as an ending, so its account is asked each
+  time. The
   ending can also be set or cleared on **Accounts → Edit**; the audit log records only that it
   was set, changed or cleared.
 
@@ -515,6 +581,11 @@ one account, and a line only ever matches entries on that account.
   line has a per-account fingerprint of date, signed amount, normalized description and its
   order among identical lines that day; a fingerprint already present is not staged again.
   All sections of one upload are staged in one transaction.
+- Verification flag: a section that no balance could check (see
+  [Statement PDF reading](#statement-pdf-reading)) is staged with `verified` False. Its account
+  page says "not verified: check each line", the import warns "Not verified for …", the statement
+  list says "not verified" and the review page shows a "Not verified" banner. Its lines are
+  otherwise matched in the same way.
 - Removing a statement removes its lines only; cleared marks stay.
 - Changing an income's split (the amount for each account on **Edit** for an income): an
   account whose amount changes loses its cleared mark, and a statement line matched to that

@@ -11,6 +11,10 @@ from django.core.management.base import BaseCommand, CommandError
 from budget.statement_pdf import StatementParseError, parse_statement_pdf
 
 
+def _dollars(value):
+    return "unknown" if value is None else f"${value:,.2f}"
+
+
 class Command(BaseCommand):
     help = "Check that a statement PDF can be read (no database changes)."
 
@@ -32,6 +36,11 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"  {section.account_label}: {len(section.lines)} rows, "
                 f"in ${money_in:,.2f}, out ${money_out:,.2f}, "
-                f"balance ${section.opening_balance:,.2f} -> ${section.closing_balance:,.2f} "
-                "(every row checked against the bank's running balance)"
+                f"balance {_dollars(section.opening_balance)} -> "
+                f"{_dollars(section.closing_balance)} "
+                + (
+                    "(rows add up to the statement's balances)"
+                    if section.verified
+                    else "(NOT VERIFIED: no balances to add the rows up against)"
+                )
             )

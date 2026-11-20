@@ -103,3 +103,19 @@
 .status-legend summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 .status-legend ul { margin: 0; padding-left: 1.2rem; }
 .row-actions form button { min-height: 44px; }
+.bill-pair { display: flex; gap: 8px; }
+.bill-pair:empty { display: none; }
+.bill-more > summary { cursor: pointer; list-style: none; user-select: none; }
+.bill-more > summary::-webkit-details-marker { display: none; }
+.bill-more > summary::after { content: "▾"; margin-left: .4rem; }
+.bill-more[open] > summary::after { content: "▴"; }
+.bill-more-items { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.bill-more-items .button { width: 100%; }
+.bill-more-items .button:last-child { color: var(--danger); }
+@media (min-width: 761px) { .row-actions { align-items: flex-start; } }
+@media (max-width: 760px) { .bill-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); } .bill-pair > :only-child { grid-column: 1 / -1; } }
+@media (max-width: 760px) {
+  /* Actions get the full card width so Confirm and Skip are comfortable tap targets. */
+  .table-wrap tbody td[data-label="Actions"] { grid-template-columns: minmax(0, 1fr); gap: .35rem; }
+  .table-wrap tbody td[data-label="Actions"] > * { grid-column: 1; }
+}

@@ -29,7 +29,7 @@ Host jobs: nightly backup timer, Back up now cron, bill generation cron
 | `forecast.py` | Home **Until payday** figures, including carry-over |
 | `outlook.py` | Outlook actuals, projections, pace and chart data |
 | `pay_periods.py` | Pay schedule and pay period generation |
-| `statements.py`, `statement_pdf.py`, `statement_views.py` | Bank statement PDF reading and the statement check |
+| `statements.py`, `statement_pdf.py`, `statement_generic.py`, `statement_views.py` | Bank statement PDF reading (one known layout, then the generic reader for other statements) and the statement check |
 | `reconciliation.py`, `reconciliation_views.py` | Account reconciliation and balance corrections |
 | `habits.py` | Spending habit analysis (small purchases, merchant frequency, trends) |
 | `debts.py` | Debt estimates and projections from the latest balance entered |
@@ -46,7 +46,7 @@ Host jobs: nightly backup timer, Back up now cron, bill generation cron
 | `admin.py`, `apps.py` | Django admin registrations; app setup, including the browser-test clock |
 | `testclock.py` | Fixed "today" for browser tests, the WebKit audit and the guide screenshots |
 | `money.py` | Money entry fields that accept `$` and thousands commas |
-| `activity_log.py`, `sign_ins.py` | Admin activity log, sign-in and failed sign-in records |
+| `activity_log.py`, `sign_ins.py` | Admin activity log (60-day retention, pruned daily by `prune_activity_log`), sign-in and failed sign-in records |
 | `login_throttle.py` | Sign-in throttling by username and device address |
 | `admin_scope.py` | Which profiles and users a non-superuser administrator may manage |
 | `backup_status.py`, `backup_requests.py` | Backup health card and banner; Back up now requests |

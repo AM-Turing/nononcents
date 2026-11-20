@@ -91,8 +91,10 @@ every query is filtered by the profile chosen at sign-in.
   bank and ledger balances, notes, and an optional one-to-one `adjustment`. It is never a
   balance source.
 - `StatementImport` is one account's section of a bank statement: account, period
-  start and end, optional closing balance, `file_sha256`, creator and time. Unique on
-  `(account, file_sha256)`; period end is not before period start. The PDF is not stored.
+  start and end, optional closing balance, `verified` (default true; false when the rows could
+  not be added up against any balance on the statement, so the lines are marked "not verified"),
+  `file_sha256`, creator and time. Unique on `(account, file_sha256)`; period end is not before
+  period start. The PDF is not stored.
 - `Account.statement_suffix` (blank or 4 digits, unique within a profile; the database
   enforces this for non-blank endings through `unique_account_statement_suffix`, as well as the
   form; editable on the account form as **Statement account ending**): last 4 digits of the bank account
@@ -131,11 +133,5 @@ payment limits are enforced transactionally.
 ## Migrations
 
 Migrations live in `budget/migrations/` and run automatically when the web container starts.
-The latest is `0023_no_overlapping_pay_periods`. Notable ones: `0002` memberships, `0007` pay schedule
-frequency, `0009` expense splits and bill snapshots, `0010` savings goals, `0012`
-reconciliation and cleared state, `0014` statement check, `0015` habits, debts and category
-budgets, `0016` drops the old receipt import table, `0017` bill frequency, `0018` report
-analysis runs, `0019` sign-ins in the audit log, `0020` sign-in throttling, `0021` scrubs failed sign-in usernames, `0022` the P8 database
-constraints (statement ending uniqueness, non-negative pay-period budgets, one source per savings
-entry, debt balance protection, the audit index) and `0023` no overlapping pay periods (Postgres
-only).
+The migrations are `0001_initial` (the whole schema), `0002_no_overlapping_pay_periods` (a database
+constraint, PostgreSQL only) and `0003_statementimport_verified` (`StatementImport.verified`).

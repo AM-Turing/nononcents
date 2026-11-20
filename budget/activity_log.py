@@ -6,13 +6,20 @@ Snackbar". One action that changed many records at once (for example combining m
 is one row: "10 expenses".
 """
 
+import logging
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
 from django.apps import apps
+from django.conf import settings
+from django.db import transaction
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 
-from .models import AuditEvent
+from .models import ApplicationSetting, AuditEvent
+
+logger = logging.getLogger("budget.activity_log")
+PRUNED_KEY = "activity_log_last_pruned"
 
 FILTERS = {
     "all": "All",
@@ -278,3 +285,63 @@ def _plain(value):
     if value is False:
         return "no"
     return str(value)
+
+
+def retention_text():
+    """The Admin caption sentence about how long entries are kept."""
+    days = settings.ACTIVITY_LOG_RETENTION_DAYS
+    if days <= 0:
+        return "Entries are kept until they are removed."
+    return f"Entries are kept for {days} days; older ones are removed automatically."
+
+
+def prune_activity_log(dry_run=False):
+    """Delete activity-log entries older than the retention period; return how many.
+
+    Only AuditEvent rows are touched. 0 days means keep everything.
+    """
+    days = settings.ACTIVITY_LOG_RETENTION_DAYS
+    if days <= 0:
+        return 0
+    old = AuditEvent.objects.filter(occurred_at__lt=timezone.now() - timedelta(days=days))
+    if dry_run:
+        return old.count()
+    with transaction.atomic():
+        return old.delete()[1].get("budget.AuditEvent", 0)
+
+
+def _prune_once_a_day(household_id):
+    today = timezone.localdate().isoformat()
+    with transaction.atomic():
+        ApplicationSetting.objects.get_or_create(
+            household_id=household_id, key=PRUNED_KEY, defaults={"value": ""}
+        )
+        # Whoever locks the row first prunes; other workers skip it instead of waiting.
+        marker = (
+            ApplicationSetting.objects.select_for_update(skip_locked=True)
+            .filter(household_id=household_id, key=PRUNED_KEY)
+            .exclude(value=today)
+            .first()
+        )
+        if marker is None:
+            return
+        prune_activity_log()
+        marker.value = today
+        marker.save(update_fields=["value"])
+
+
+def prune_daily_after_commit(household):
+    """Prune at most once a day, after the caller's transaction has committed.
+
+    A failure is logged (no payloads) and never reaches the caller.
+    """
+    if household is None or settings.ACTIVITY_LOG_RETENTION_DAYS <= 0:
+        return
+
+    def run():
+        try:
+            _prune_once_a_day(household.pk)
+        except Exception:
+            logger.exception("Activity log pruning failed")
+
+    transaction.on_commit(run)

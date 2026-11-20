@@ -13,8 +13,9 @@ NoNonCents runs on your own computer or server. Your budget data stays in your P
 - **Outlook**: a forecast for any date range, with charts, category tables, CSV export and Print / PDF.
 - **Savings goals**: a savings balance organised into ordered goals, without extra bank accounts.
 - **Debts and habits**: balances and payoff estimates from the statement figures you enter, and spending habits to review.
-- **Bank statement check**: read the supported statement layout from a monthly PDF, match its rows to your entries, and reconcile balances. The PDF itself is not kept.
+- **Bank statement check**: reads PDF statements from most banks; checks them against the statement's balances; matches the rows to your entries and reconciles balances. The PDF itself is not kept.
 - **Several budget profiles** on one installation, each with its own accounts, bills, categories and users.
+- **Activity log**: sign-ins and changes in Admin, kept for 60 days by default (`ACTIVITY_LOG_RETENTION_DAYS`).
 - **Backups**: verified nightly PostgreSQL dumps, copies to other folders, a restore drill, and an Admin page that shows backup health.
 - **Light and dark themes**, a phone-first layout, keyboard-accessible pages, and in-app Help with search.
 - **Optional AI insights**, off by default. See [AI analysis](#ai-analysis).

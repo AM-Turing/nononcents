@@ -139,7 +139,7 @@ def recent_completed_periods(household, today):
 def anticipated_period_spending(household, today, next_period):
     """Return (amount, basis, inputs) for next period's spending.
 
-    The owner's spending target for the next pay period is used (new periods copy the
+    The household's spending target for the next pay period is used (new periods copy the
     previous target, so it is set once). One-off purchases therefore never change the
     estimate. Only when no target is set does the average of the last three completed
     periods stand in. The average is always listed for comparison.

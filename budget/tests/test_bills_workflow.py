@@ -60,6 +60,23 @@ def test_bills_page_shows_only_selected_month(bill_setup):
 
 
 @pytest.mark.django_db
+def test_edit_and_remove_live_in_the_per_bill_more_menu(bill_setup):
+    client, _, _, _, bill = bill_setup
+    BillOccurrence.objects.create(
+        bill=bill, due_date=date(2026, 8, 29), expected_amount=Decimal("100.00")
+    )
+
+    html = client.get(reverse("bills"), {"month": "2026-08"}).content.decode()
+
+    menu = html.split('<details class="bill-more">')[1].split("</details>")[0]
+    assert "More<span" in menu and f"for {bill.name}" in menu
+    assert "Edit bill" in menu and ">Remove<" in menu
+    for label in ("Paid $", ">Confirm<", ">Skip<"):
+        assert label not in menu
+        assert label in html.split('<details class="bill-more">')[0]
+
+
+@pytest.mark.django_db
 def test_add_bill_creates_its_first_month_obligation(bill_setup):
     client, _, account, category, _ = bill_setup
     today = timezone.localdate()

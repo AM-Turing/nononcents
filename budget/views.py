@@ -3707,6 +3707,7 @@ def application_admin(request):
             "profiles": profile_rows,
             "activity": activity_log.activity_rows(home, log_filter),
             "activity_filters": activity_log.FILTERS,
+            "activity_retention": activity_log.retention_text(),
             "activity_filter": log_filter,
         },
     )

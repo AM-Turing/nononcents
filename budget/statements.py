@@ -4,7 +4,7 @@ Manual entry stays the record. A statement is only a completeness check:
 
 * Lines are staged, never written to the ledger directly.
 * Matching uses account, exact amount and a date window. It never looks at merchant text:
-  the owner's merchant and category always win, and the bank description is shown only
+  the user's merchant and category always win, and the bank description is shown only
   for reference.
 * The owner confirms a proposed match with one tap ("Same purchase"); that marks the entry
   cleared. Unmatched lines can be added as a new entry or dismissed. Entries on the account
@@ -50,6 +50,8 @@ class ParsedSection:
     closing_balance: Decimal | None = None
     opening_balance: Decimal | None = None
     account_suffix: str = ""  # last 4 digits of the bank account number
+    # False when nothing on the statement could confirm the rows (no balances to add up).
+    verified: bool = True
 
 
 def _normalise(text: str) -> str:
@@ -101,6 +103,7 @@ def stage_statement(
             period_start=section.period_start,
             period_end=section.period_end,
             closing_balance=section.closing_balance,
+            verified=section.verified,
             file_sha256=file_sha256,
             created_by=actor,
         )

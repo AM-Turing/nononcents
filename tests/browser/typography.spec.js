@@ -275,6 +275,7 @@ test("bills keep paid and actions visible on phone", async ({ page }) => {
   const firstBill = page.locator("tbody tr").first();
   await expect(firstBill.locator("td").nth(4)).toBeVisible();
   await expect(firstBill.locator("td").nth(5)).toBeVisible();
+  await firstBill.locator(".bill-more > summary").click();
   await expect(firstBill.getByRole("link", { name: "Edit bill" })).toBeVisible();
   await assertTypography(page);
   await expect(page).toHaveScreenshot("bills-review-mobile-light.png", { fullPage: true });
@@ -284,6 +285,7 @@ test("bill edit offers future due-date updates", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page);
   await page.goto("/bills/");
+  await page.locator(".bill-more > summary").first().click();
   await page.getByRole("link", { name: "Edit bill" }).first().click();
 
   const billName = page.getByLabel("Bill name");
@@ -578,8 +580,9 @@ test("a bill can be safely removed on phone", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page);
   await page.goto("/bills/");
-  const row = page.locator("tbody tr").filter({ has: page.getByRole("link", { name: "Remove" }) }).first();
+  const row = page.locator("tbody tr").filter({ has: page.locator(".bill-more-items a:text-is('Remove')") }).first();
   const billName = (await row.locator("strong").first().textContent()).trim();
+  await row.locator(".bill-more > summary").click();
   await row.getByRole("link", { name: "Remove" }).click();
 
   await expect(page.getByRole("heading", { name: `Remove ${billName}` })).toBeVisible();
@@ -690,4 +693,34 @@ test("expense can be split across categories as one transaction", async ({ page 
   await expect(
     page.getByRole("cell", { name: "Split — Groceries: $60.00; Utilities: $40.00" }),
   ).toBeVisible();
+});
+
+test("bill actions are grouped on phone and More opens by keyboard", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await login(page);
+  await page.goto("/bills/");
+  const row = page.locator("tbody tr").filter({ has: page.getByRole("button", { name: "Confirm" }) }).first();
+  const paid = row.locator("button.primary[aria-label^='Mark']");
+  const confirm = row.getByRole("button", { name: "Confirm", exact: true });
+  const skip = row.getByRole("link", { name: "Skip", exact: true });
+  const cell = row.locator("td[data-label='Actions']");
+  const [cellBox, paidBox, confirmBox, skipBox] = await Promise.all([cell, paid, confirm, skip].map((l) => l.boundingBox()));
+  expect(paidBox.width).toBeGreaterThan(cellBox.width * 0.85);
+  expect(Math.abs(confirmBox.y - skipBox.y)).toBeLessThan(3);
+  expect(Math.abs(confirmBox.width - skipBox.width)).toBeLessThan(3);
+  expect(paidBox.width).toBeGreaterThan(confirmBox.width * 1.8);
+  for (const box of [paidBox, confirmBox, skipBox]) expect(box.height).toBeGreaterThanOrEqual(43.5);
+
+  await expect(row.getByRole("link", { name: "Edit bill" })).toBeHidden();
+  const more = row.locator(".bill-more > summary");
+  await expect(more).toHaveText(/More for /);
+  await more.focus();
+  await page.keyboard.press("Enter");
+  await expect(row.getByRole("link", { name: "Edit bill" })).toBeVisible();
+  await expect(row.getByRole("link", { name: "Remove" })).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(row.getByRole("link", { name: "Edit bill" })).toBeHidden();
+  await page.keyboard.press("Space");
+  await expect(row.getByRole("link", { name: "Remove" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBeTruthy();
 });

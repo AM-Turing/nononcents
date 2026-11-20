@@ -113,6 +113,7 @@ All settings are read from `.env` by both containers. After a change, run `make 
 | `BACKUP_RETENTION_DAYS`, `BACKUP_KEEP_MIN` | `30`, `7` | Delete dumps older than this many days, but always keep at least this many of the newest. |
 | `BACKUP_PING_URL` | empty | Optional URL requested after each successful backup, for a "dead man's switch" monitor. |
 | `BACKUP_MAX_AGE_HOURS` | `26` | Hours without a successful backup before administrators see a warning. |
+| `ACTIVITY_LOG_RETENTION_DAYS` | `60` | Days the Admin activity log keeps entries. Older entries are removed once a day at the next sign-in. `0` keeps everything. |
 | `BACKUP_STATUS_DIR`, `BACKUP_REQUEST_DIR` | folders inside `BACKUP_DIR` | Where the status file and "Back up now" requests are kept. |
 | `REPORT_LLM_PROVIDER` | `disabled` | `openai_compatible` turns on the AI analysis. See [AI analysis](#ai-analysis). |
 | `REPORT_LLM_URL`, `REPORT_LLM_MODEL`, `REPORT_LLM_API_KEY` | empty | Endpoint, model name and optional bearer token. |
@@ -172,6 +173,23 @@ WantedBy=timers.target
 ```
 
 Then run `sudo systemctl daemon-reload && sudo systemctl enable --now nononcents-backup.timer`. `Persistent=true` runs a missed night as soon as the computer starts again.
+
+### Activity log
+
+Activity-log entries older than `ACTIVITY_LOG_RETENTION_DAYS` (default 60; `0` keeps them all) are
+removed at most once a day, after a sign-in commits, so nothing needs scheduling. A failed prune is
+logged and never blocks a sign-in. Only the activity log is touched: Undo, throttling, reports and
+backups use their own data.
+
+Preview the number of entries that would go, then remove them (the command is safe to repeat):
+
+```bash
+docker compose exec web python manage.py prune_activity_log --dry-run
+```
+
+```bash
+docker compose exec web python manage.py prune_activity_log
+```
 
 ## Back up now (Admin)
 

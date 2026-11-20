@@ -184,6 +184,23 @@ One action that changed many records at once (for example combining merchant nam
 is shown as one row such as "10 expenses". "System (automatic)" means no person made the change: the app or a
 server command did it, for example the bill clean-up command.
 
+The activity log keeps entries for 60 days. Older entries are removed automatically, at most once
+a day, the next time someone signs in. Nothing needs to be scheduled. The Activity log section on
+Admin says how long entries are kept.
+
+The number of days is set with `ACTIVITY_LOG_RETENTION_DAYS` in the `.env` file (see
+[Deployment and updates](../deployment.md#activity-log)). `0` keeps entries forever.
+
+To remove old entries by hand, run this in the NoNonCents folder (add `--dry-run` to see how many would be
+removed without removing them):
+
+```bash
+docker compose exec web python manage.py prune_activity_log
+```
+
+Removed entries cannot be restored except from a backup taken before the removal. Undo, balances
+and reports do not depend on the log.
+
 People sometimes type a password into the username box. So a failed sign-in never shows a typed
 name that is not a real user; the row says **Unknown user** instead.
 
