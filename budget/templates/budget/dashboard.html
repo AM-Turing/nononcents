@@ -25,31 +25,37 @@
   </article>
   <article class="card money-card" aria-labelledby="bills-card-title">
     <h3 id="bills-card-title" class="label">Bills account</h3>
-    <div class="headline"><p class="headline-label">Remaining after Bills this period</p><p class="money{% if forecast.bills_surplus.amount < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</p></div>
+    <div class="headline"><p class="headline-label">Balance today</p><p class="money{% if forecast.bills_balance < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.bills_balance %}</p></div>
+    <p class="card-line">Bills still to pay before payday: {% include 'budget/_signed_money.html' with amount=forecast.due_this_period.bills_total %}{% with n=forecast.due_this_period.bills_items|length %}{% if n %} · {{ n }} bill{{ n|pluralize }}{% endif %}{% endwith %}</p>
+    <p class="card-links"><a href="{% url 'bills' %}">Bills</a>{% if bills_account %} · <a href="{% url 'account_reconcile' bills_account.pk %}">Reconcile with bank</a>{% endif %}</p>
+  </article>
+  <article class="card money-card" aria-labelledby="projections-card-title">
+    <h3 id="projections-card-title" class="label">Bill Account Projections</h3>
+    <div class="headline"><p class="headline-label">Remaining Funds in Bills after this period</p><p class="money{% if forecast.bills_surplus.amount < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</p></div>
     <p class="card-line">This period's bills from Bills: paid {% include 'budget/_signed_money.html' with amount=bills_account_paid %} of {% include 'budget/_signed_money.html' with amount=bills_account_total %}{% if bills_account_left %} · {{ bills_account_left }} left to pay{% endif %}</p>
     <details class="forecast-detail"><summary>How this is worked out</summary>
       <dl class="ledger-lines">
         <div><dt>Bills balance</dt><dd>{% include 'budget/_signed_money.html' with amount=bills_balance %}</dd></div>
         <div><dt>− unpaid bills before payday</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.due_this_period.bills_total %}</dd></div>
-        <div class="ledger-total"><dt>= Remaining after Bills this period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</dd></div>
+        <div class="ledger-total"><dt>= Remaining Funds in Bills after this period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</dd></div>
       </dl>
     </details>
     <div class="next-period">
       <p><strong>Next pay period</strong> <small>{{ next_period.start_date }} – {{ next_period.end_date }}</small></p>
-      <div class="headline"><p class="headline-label">Remaining after bills next period</p><p class="money{% if forecast.next_bills_covered.amount < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.next_bills_covered.amount %}</p></div>
+      <div class="headline"><p class="headline-label">Projected remaining after next period</p><p class="money{% if forecast.next_bills_covered.amount < 0 %} negative{% endif %}">{% include 'budget/_signed_money.html' with amount=forecast.next_bills_covered.amount %}</p></div>
       {% if forecast.next_bills_covered.amount < 0 %}<p class="status-text negative">Next period is short by ${{ forecast.next_bills_covered.amount|cut:'-'|floatformat:"2g" }}.{% if held_for_next > 0 %} ${{ held_for_next|floatformat:"2g" }} of it is held back on the Spending card.{% endif %}</p>{% endif %}
       <details class="forecast-detail"><summary>How this is worked out</summary>
         <dl class="ledger-lines">
-          <div><dt>Remaining after Bills this period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</dd></div>
+          <div><dt>Remaining Funds in Bills after this period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.bills_surplus.amount %}</dd></div>
           <div><dt>+ expected paycheck</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.expected_paycheck.amount %}</dd></div>
           <div><dt>− next period's bills</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.next_period_bills.total %}</dd></div>
           <div><dt>{% if forecast.anticipated_from_target %}− spending target{% else %}− expected spending <small>(recent average; no target set)</small>{% endif %}</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.anticipated_spending.amount %}</dd></div>
-          <div class="ledger-total"><dt>= Remaining after bills next period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.next_bills_covered.amount %}</dd></div>
+          <div class="ledger-total"><dt>= Projected remaining after next period</dt><dd>{% include 'budget/_signed_money.html' with amount=forecast.next_bills_covered.amount %}</dd></div>
         </dl>
         {% include 'budget/_forecast_figure.html' with fig=forecast.anticipated_spending %}{% include 'budget/_forecast_figure.html' with fig=forecast.expected_paycheck %}
       </details>
     </div>
-    <p class="card-links"><a href="{% url 'bills' %}">Bills</a> · <a href="{% url 'budgets' %}?period={{ next_period.pk }}">Edit paycheck or spending target</a>{% if bills_account %} · <a href="{% url 'account_reconcile' bills_account.pk %}">Reconcile with bank</a>{% endif %}</p>
+    <p class="card-links"><a href="{% url 'budgets' %}?period={{ next_period.pk }}">Edit paycheck or spending target</a></p>
   </article>
   {% with carry=forecast.carry_over %}<article class="card money-card carry-card" aria-labelledby="carry-card-title">
     <h3 id="carry-card-title" class="label">Carry over to next pay period</h3>
@@ -57,7 +63,7 @@
     {% if carry.needed > 0 %}
     <p class="status-text">Next period's bills and {% if forecast.anticipated_from_target %}spending target{% else %}expected spending{% endif %} are more than the expected paycheck, so this much has to be left over from this period.</p>
     <dl class="ledger-lines carry-sources">
-      <div><dt>From Bills <small>(remaining after Bills this period)</small></dt><dd>{% include 'budget/_signed_money.html' with amount=carry.from_bills %}</dd></div>
+      <div><dt>From Bills <small>(remaining funds in Bills after this period)</small></dt><dd>{% include 'budget/_signed_money.html' with amount=carry.from_bills %}</dd></div>
       <div><dt>From Spending <small>(held for next period)</small></dt><dd>{% include 'budget/_signed_money.html' with amount=carry.from_spending %}</dd></div>
     </dl>
     {% if carry.bills_shortfall_from_spending > 0 %}<p class="status-text">Spending also holds back ${{ carry.bills_shortfall_from_spending|floatformat:"2g" }} because Bills is short this period.</p>{% endif %}

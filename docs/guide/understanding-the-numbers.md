@@ -26,7 +26,7 @@ The app follows a few fixed rules. Most surprises make sense once you know them.
 The top of Home is headed **Until payday**, with the next payday's date and the number of days
 left. Below it are three cards.
 
-![The Home page on a computer with the Spending account, Bills account and Carry over cards](images/home-desktop.png)
+![The Home page on a computer with the Spending account, Bills account, Bill Account Projections and Carry over cards](images/home-desktop.png)
 
 ### Safe to spend
 
@@ -49,32 +49,38 @@ would need to move money into Spending, or spend less, to get through to payday.
 The line **This period: spent … of … target** compares what you have spent this pay period
 (after refunds) with your spending target.
 
-### Remaining after Bills this period
+### Bills account
 
-The large figure on the **Bills account** card is what the Bills account will have left once
-every bill still due before payday has been paid.
+The **Bills account** card, next to Spending, shows **Balance today** (what is in the Bills
+account now) and **Bills still to pay before payday**: the unpaid bills due from the Bills
+account before payday, with how many there are. Bills paid from Spending are not counted here.
+
+### Remaining Funds in Bills after this period
+
+The first figure on the **Bill Account Projections** card is what the Bills account will have
+left once every bill still due before payday has been paid.
 
 | Line | Meaning |
 | --- | --- |
 | **Bills balance** | What is in the Bills account today. |
 | **− unpaid bills before payday** | Bills paid from the Bills account that are still due before payday. |
-| **= Remaining after Bills this period** | What is left in Bills on payday. |
+| **= Remaining Funds in Bills after this period** | What is left in Bills on payday. |
 
 The line **This period's bills from Bills: paid … of …** shows how far through this period's
 bills you are.
 
-### Remaining after bills next period
+### Projected remaining after next period
 
 Lower on the same card, under **Next pay period** and its dates, is a look one period ahead:
 what will be left at the end of next pay period if everything goes to plan.
 
 | Line | Meaning |
 | --- | --- |
-| **Remaining after Bills this period** | The figure above. |
+| **Remaining Funds in Bills after this period** | The figure above. |
 | **+ expected paycheck** | The next paycheck: the amount on **Budgets** for that period, or the real paycheck once it is recorded. |
 | **− next period's bills** | Every bill due in the next pay period, from any account. |
 | **− spending target** | Next period's spending target. If none is set, the line reads **− expected spending (recent average; no target set)** and uses your average spending over the last three finished pay periods. |
-| **= Remaining after bills next period** | What should be left after next period's bills and spending. |
+| **= Projected remaining after next period** | What should be left after next period's bills and spending. |
 
 Under the sums, the card says where the paycheck and spending figures came from. The
 **Edit paycheck or spending target** link opens **Budgets** for that next period.
@@ -93,7 +99,7 @@ get through the next one?"
 
 When a carry-over is needed, the card shows where it comes from:
 
-- **From Bills (remaining after Bills this period)**: the Bills account covers as much as it
+- **From Bills (remaining funds in Bills after this period)**: the Bills account covers as much as it
   has left after this period's bills.
 - **From Spending (held for next period)**: Spending holds back the rest. This is the
   **held for next period** line on the Safe to spend card, which is why Safe to spend goes down.
@@ -108,21 +114,21 @@ Say Spending holds `$1,200.00`, Bills holds `$900.00`, and before payday you sti
 in bills from Bills and `$50.00` from Spending. Next period has `$1,500.00` of bills, a
 `$1,000.00` spending target, and a `$2,100.00` paycheck.
 
-- **Remaining after Bills this period** = 900 − 600 = **$300.00**.
+- **Remaining Funds in Bills after this period** = 900 − 600 = **$300.00**.
 - **Needs to carry over** = 1,500 + 1,000 − 2,100 = **$400.00**: $300.00 from Bills and
   $100.00 from Spending.
 - **Safe to spend** = 1,200 − 50 − 100 = **$1,050.00**.
-- **Remaining after bills next period** = 300 + 2,100 − 1,500 − 1,000 = **−⁠$100.00**, and the
+- **Projected remaining after next period** = 300 + 2,100 − 1,500 − 1,000 = **−⁠$100.00**, and the
   card says the next period is short by $100.00, all of it held back on the Spending card.
 
 ### Why a negative number can appear when money is carrying over
 
-A negative **Remaining after bills next period** looks alarming, but read the line under it.
+A negative **Projected remaining after next period** looks alarming, but read the line under it.
 It usually says "Next period is short by $X. $X of it is held back on the Spending card." That
 means the shortfall is already taken care of: Safe to spend has been lowered by the same amount,
 so if you keep within Safe to spend, that money will still be there on payday to carry over.
 
-The figure on the Bills card assumes the Bills account works alone. The **Carry over** card
+The figure on the Bill Account Projections card assumes the Bills account works alone. The **Carry over** card
 shows the full picture, with Bills and Spending working together. Only worry if the Spending
 card itself shows **Short by**.
 

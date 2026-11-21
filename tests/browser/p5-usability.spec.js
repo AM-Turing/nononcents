@@ -43,9 +43,10 @@ test.describe("phone", () => {
     await expect(more).not.toHaveAttribute("open", "");
     await expect(page.getByLabel("Amount")).toBeVisible();
     await expect(page.getByLabel("Merchant")).toBeVisible();
-    await expect(page.getByLabel("Apply payment to bill (optional)")).toBeHidden();
+    // Paying a bill is a main field, visible without opening More options.
+    await expect(page.getByLabel("Apply payment to bill")).toBeVisible();
+    await expect(page.getByLabel("Bill month (optional)")).toBeHidden();
     await more.getByText("More options").click();
-    await expect(page.getByLabel("Apply payment to bill (optional)")).toBeVisible();
     await expect(page.getByLabel("Bill month (optional)")).toBeVisible();
     await expect(page.getByLabel("Spending classification")).toBeVisible();
     await expect(page.getByLabel("Split this transaction across categories")).toBeVisible();

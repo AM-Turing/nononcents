@@ -175,6 +175,8 @@ _CHOOSE_MESSAGES = {
     "destination": "Choose the account the money goes to",
 }
 _DEFAULT_REQUIRED = forms.Field.default_error_messages["required"]
+# Empty choices that say what leaving the select alone means.
+_EMPTY_CHOICES = {"bill": "Not a bill payment", "bill_occurrence": "Nearest unpaid month"}
 
 
 def name_the_field(form):
@@ -192,7 +194,7 @@ def name_the_field(form):
             else:
                 message = f"{label} is required."
             field.error_messages["required"] = message
-        empty = _CHOOSE_MESSAGES.get(name, "None")
+        empty = _EMPTY_CHOICES.get(name) or _CHOOSE_MESSAGES.get(name, "None")
         if isinstance(field, forms.ModelChoiceField):
             if field.empty_label is not None:
                 field.empty_label = empty
@@ -347,12 +349,12 @@ class ExpenseForm(MoneyDateMixin):
         help_text="Add at least two category amounts that equal the total expense exactly.",
     )
     bill = forms.ModelChoiceField(
-        label="Apply payment to bill (optional)",
+        label="Apply payment to bill",
         queryset=RecurringBill.objects.none(),
         required=False,
         help_text=(
-            "Choose the bill being paid. The matching monthly bill is selected "
-            "automatically from the transaction date."
+            "Choose the bill this pays, or leave it as \u201cNot a bill payment\u201d. The "
+            "bill month is picked from the transaction date."
         ),
     )
 
@@ -388,10 +390,10 @@ class ExpenseForm(MoneyDateMixin):
                 "account",
                 "category",
                 "merchant",
+                "bill",
                 "notes",
                 "split_transaction",
                 "is_essential_override",
-                "bill",
                 "bill_occurrence",
             ]
         )
@@ -411,7 +413,8 @@ class ExpenseForm(MoneyDateMixin):
             archived_at=None, **household_filter(household)
         )
 
-    MORE_OPTION_FIELDS = ("split_transaction", "is_essential_override", "bill", "bill_occurrence")
+    # Paying a bill is a main choice; only the month override stays tucked.
+    MORE_OPTION_FIELDS = ("split_transaction", "is_essential_override", "bill_occurrence")
 
     @property
     def main_fields(self):
@@ -861,12 +864,12 @@ class HistoryTransactionEditForm(NamedFieldMessages, UnusualDateGuard, forms.For
         required=False,
     )
     bill = forms.ModelChoiceField(
-        label="Apply payment to bill (optional)",
+        label="Apply payment to bill",
         queryset=RecurringBill.objects.none(),
         required=False,
         help_text=(
-            "Choose the bill being paid. The matching monthly bill is selected "
-            "automatically from the transaction date."
+            "Choose the bill this pays, or leave it as \u201cNot a bill payment\u201d. The "
+            "bill month is picked from the transaction date."
         ),
     )
 
@@ -897,6 +900,12 @@ class HistoryTransactionEditForm(NamedFieldMessages, UnusualDateGuard, forms.For
         if transaction_type == "Transfer":
             self.fields["description"].label = "Notes"
             self.fields.pop("notes")
+        if transaction_type in {"Expense", "Refund"}:
+            # The description is the merchant; offer the same suggestions as Add expense.
+            self.fields["description"].label = "Merchant"
+            self.fields["description"].widget.attrs.update(
+                {"list": "merchant-options", "autocomplete": "off"}
+            )
         if transaction_type != "Expense":
             self.fields.pop("split_transaction")
             self.fields.pop("bill")

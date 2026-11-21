@@ -275,6 +275,18 @@ def test_history_edit_rejects_a_locked_destination_period(search_setup):
 
 
 @pytest.mark.django_db
+def test_history_edit_expense_labels_merchant_and_offers_suggestions(search_setup):
+    expense = Expense.objects.get(merchant="Corner MARKET")
+    html = search_setup.get(
+        reverse("transaction_edit", args=["expense", expense.pk])
+    ).content.decode()
+    assert '<label for="id_description">Merchant' in html
+    assert 'list="merchant-options"' in html
+    assert '<datalist id="merchant-options">' in html
+    assert '<option value="Corner MARKET">' in html
+
+
+@pytest.mark.django_db
 def test_history_edit_income_requires_allocations_to_match(search_setup):
     expense = Expense.objects.get(merchant="Corner MARKET")
     account = expense.account

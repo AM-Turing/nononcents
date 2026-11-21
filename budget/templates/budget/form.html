@@ -13,7 +13,7 @@
     {% for field in form.main_fields|default:form.visible_fields %}{% include 'budget/_form_field.html' %}{% endfor %}
     {% if form.more_fields %}<details class="more-options"{% if form.more_options_open %} open{% endif %}><summary>More options</summary>{% for field in form.more_fields %}{% include 'budget/_form_field.html' %}{% endfor %}</details>{% endif %}
     {% include 'budget/_savings_allocation_fields.html' %}
-    {% if merchant_map is not None %}<datalist id="merchant-options">{% for name in merchant_names %}<option value="{{ name }}"></option>{% endfor %}</datalist>{% endif %}
+    {% if merchant_map is not None or merchant_names %}<datalist id="merchant-options">{% for name in merchant_names %}<option value="{{ name }}"></option>{% endfor %}</datalist>{% endif %}
     {% if income_defaults is not None %}<datalist id="income-sources">{% for name in income_sources %}<option value="{{ name }}"></option>{% endfor %}</datalist>{% endif %}
     <div class="form-actions">{% if add_another %}<button class="primary" type="submit">Save</button><button type="submit" name="add_another" value="1">Save and add another</button>{% else %}<button class="primary" type="submit">{{ title|submit_label }}</button>{% endif %}<a class="button" href="{{ return_url }}">Cancel</a></div>
   </form>

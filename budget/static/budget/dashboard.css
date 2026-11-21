@@ -36,7 +36,9 @@
 .negative { color: var(--danger); }
 
 /* Two reconciling account cards */
-.money-cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.money-cards { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 700px) { .money-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .money-cards .carry-card { grid-column: 1 / -1; } }
+@media (min-width: 1000px) { .money-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .money-card h3 { margin: 0 0 .5rem; }
 .ledger-lines { margin: 0 0 .6rem; }
 .ledger-lines div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }

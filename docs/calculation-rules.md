@@ -182,7 +182,7 @@ Inputs:
 Formulas, as computed:
 
 - Bills left this period = Bills balance - Bills due before payday from non-Spending accounts.
-  Home labels this **Remaining after Bills this period**.
+  Home labels this **Remaining Funds in Bills after this period**.
 - Hold back for next period (the carry-over needed) = max(0, next-period bills + anticipated
   spending - expected paycheck). Home labels this **Needs to carry over**.
 - Hold-back not covered = max(0, hold back - Bills left this period). Home labels this "held for
@@ -191,7 +191,7 @@ Formulas, as computed:
   accounts - hold-back not covered.
 - Per day until payday = safe to spend / days until payday.
 - Next period left over = Bills left this period + expected paycheck - next-period bills -
-  anticipated spending. Home labels this **Remaining after bills next period**.
+  anticipated spending. Home labels this **Projected remaining after next period**.
 
 Only the hold-back figures are clamped at zero. The other figures can be negative, meaning short
 by that amount.
@@ -213,9 +213,11 @@ in a "How this is worked out" panel that opens on tap; the lines reconcile exact
 - **Spending account**: **Safe to spend** = Spending balance - bills paid from Spending before
   payday - held for next period. Below it: about $X a day until payday, or "Short by $X before
   payday" when negative; and this period's spending against the Spending target.
-- **Bills account**: **Remaining after Bills this period** = Bills balance - unpaid bills before
-  payday. Then, for the next pay period, **Remaining after bills next period** = Remaining after
-  Bills this period + expected paycheck - next period's bills - spending target. The last line
+- **Bills account**: **Balance today** = Bills balance; **Bills still to pay before payday** =
+  unpaid live bills due from Bills before payday (count shown).
+- **Bill Account Projections**: **Remaining Funds in Bills after this period** = Bills balance -
+  unpaid bills before payday. Then, for the next pay period, **Projected remaining after next
+  period** = Remaining Funds in Bills after this period + expected paycheck - next period's bills - spending target. The last line
   reads "expected spending (recent average; no target set)" when the anticipated figure is the
   three-period average. When it is negative, the card says how much next period is short and how
   much of it is held back on the Spending card.

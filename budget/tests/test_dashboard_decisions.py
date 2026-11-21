@@ -203,8 +203,8 @@ def test_dashboard_compares_spending_and_current_and_next_period_bills(dashboard
     assert "Spending account" in content and "Bills account" in content
     # Each card leads with its result; the calculation sits in a dropdown underneath.
     assert '<p class="headline-label">Safe to spend</p>' in content
-    assert '<p class="headline-label">Remaining after Bills this period</p>' in content
-    assert '<p class="headline-label">Remaining after bills next period</p>' in content
+    assert '<p class="headline-label">Remaining Funds in Bills after this period</p>' in content
+    assert '<p class="headline-label">Projected remaining after next period</p>' in content
     assert "Left over" not in content and "Left after this period" not in content
     # Carry-over: 225 next bills + 0 expected spending - 100 paycheck = 125 needed.
     assert "Carry over to next pay period" in content

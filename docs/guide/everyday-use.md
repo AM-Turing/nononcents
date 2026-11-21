@@ -184,8 +184,8 @@ For a payment of a different amount, or on another date:
 
 1. Select **＋ Add transaction**. The form opens on **Add expense**.
 2. Enter the amount and date, the account that paid it, and a Bill category.
-3. Open **More options**. Under **Apply payment to bill (optional)**, choose the bill.
-4. Leave **Bill month (optional)** blank to let the app pick the nearest unpaid month, or choose
+3. Under **Apply payment to bill**, choose the bill (it is right after **Merchant**).
+4. Open **More options** only if you need a particular month: leave **Bill month (optional)** blank to let the app pick the nearest unpaid month, or choose
    the month yourself. A skipped month never takes a payment. If the app would pick one, it
    refuses the payment with "A skipped bill month cannot receive a payment." Choose an unpaid
    month instead.

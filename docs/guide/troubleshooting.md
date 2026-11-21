@@ -37,14 +37,14 @@ and today's balances. A wrong figure in any of them changes the result.
 
 1. Tap **How this is worked out** on the card and check each line.
 2. If the paycheck or spending target is wrong, use **Edit paycheck or spending target** on
-   the Bills card.
+   the Bill Account Projections card.
 3. If a bill amount is wrong, fix that month on **Bills**: open **More** on the bill's row, then
    select **Edit bill**.
 4. Check for "older unpaid bills need review": they are left out of the figures until you deal
    with them.
 5. Read [Understanding the numbers](understanding-the-numbers.md) for what each line means.
 
-### Remaining after bills next period is negative, but money is carrying over
+### Projected remaining after next period is negative, but money is carrying over
 
 **What it means:** this is normal when the line under it says the shortfall is "held back on
 the Spending card". Safe to spend is already lowered by that amount.
@@ -75,8 +75,8 @@ Check next month's bills on **Bills** for a bill counted twice or an amount that
 - **Missing:** open **More** on a month where it does show and select **Edit bill**, and check
   **How often** and **First due month**. If it shows nowhere, add it again with **＋ Add bill**.
 - **Still unpaid after paying:** use **Paid $…** for a full payment, or edit the payment in
-  **History** and choose the bill under **Apply payment to bill (optional)** and the right
-  **Bill month (optional)**.
+  **History** and choose the bill under **Apply payment to bill** and, under **More options**,
+  the right **Bill month (optional)**.
 
 ### An entry is in the wrong pay period
 

@@ -74,7 +74,7 @@ def expense_post(setup, **extra):
 # --- Merchant memory ------------------------------------------------------------------------
 
 
-def test_merchant_datalist_dedupes_case_and_orders_by_use(home_setup):
+def test_merchant_datalist_dedupes_case(home_setup):
     for name in ("corner market", "Corner Market", "Corner Market", "Fuel Stop", "  ", ""):
         spend(home_setup, name)
     page = home_setup["client"].get(reverse("expense_add"))
@@ -84,6 +84,32 @@ def test_merchant_datalist_dedupes_case_and_orders_by_use(home_setup):
     assert 'list="merchant-options"' in html
     assert html.count('<option value="Corner Market">') == 1
     assert "corner market</option>" not in html
+
+
+def test_merchant_datalist_is_alphabetical_ignoring_case(home_setup):
+    # Use counts no longer decide the order: zebra x3, Mango x2, apple x1 -> A to Z.
+    for name in (
+        "Zebra Mart",
+        "Zebra Mart",
+        "Zebra Mart",
+        "Mango Cafe",
+        "Mango Cafe",
+        "apple stand",
+    ):
+        spend(home_setup, name)
+    names = home_setup["client"].get(reverse("expense_add")).context["merchant_names"]
+    assert names == ["apple stand", "Mango Cafe", "Zebra Mart"]
+
+
+def test_merchant_datalist_keeps_the_most_used_when_capped(home_setup, monkeypatch):
+    from budget import views
+
+    monkeypatch.setattr(views, "MERCHANT_CAP", 2)
+    for name in ("Bakery", "Bakery", "Yarn Shop", "Yarn Shop", "Antiques"):
+        spend(home_setup, name)
+    # The two most used are kept (Antiques, used once, is dropped), then listed A to Z.
+    names = home_setup["client"].get(reverse("expense_add")).context["merchant_names"]
+    assert names == ["Bakery", "Yarn Shop"]
 
 
 def test_merchant_datalist_is_capped(home_setup):

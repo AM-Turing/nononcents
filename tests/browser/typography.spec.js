@@ -278,6 +278,9 @@ test("bills keep paid and actions visible on phone", async ({ page }) => {
   await firstBill.locator(".bill-more > summary").click();
   await expect(firstBill.getByRole("link", { name: "Edit bill" })).toBeVisible();
   await assertTypography(page);
+  // Opening More scrolls the page; fixed elements land wherever the scroll left them in a
+  // full-page capture, so start from the top every time.
+  await page.evaluate(() => window.scrollTo(0, 0));
   await expect(page).toHaveScreenshot("bills-review-mobile-light.png", { fullPage: true });
 });
 
@@ -452,7 +455,7 @@ test("history transactions can be corrected and deleted", async ({ page }) => {
   const row = page.locator(".transaction-item").filter({ hasText: "Original description" });
   await row.getByRole("link", { name: "Edit" }).click();
   await expect(page.locator("#id_transaction_type")).toBeDisabled();
-  await page.getByLabel("Description").fill("Corrected description");
+  await page.getByLabel("Merchant").fill("Corrected description");
   await page.getByLabel("Amount").fill("21.43");
   await page.getByRole("button", { name: "Save changes" }).click();
 
@@ -657,7 +660,7 @@ test("next-period carry-over links to editable paycheck", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page);
 
-  await expect(page.locator(".money-card").nth(1).getByRole("heading", { name: "Bills account" })).toBeVisible();
+  await expect(page.locator(".money-card").nth(2).getByRole("heading", { name: "Bill Account Projections" })).toBeVisible();
   await page.getByRole("link", { name: "Edit paycheck or spending target" }).click();
 
   await expect(page).toHaveURL(/\/budgets\/\?period=\d+/);

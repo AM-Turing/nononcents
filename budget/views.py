@@ -491,7 +491,8 @@ ADD_FORMS = {
 
 
 def merchant_memory(home):
-    """Datalist names (most used first) and a casefolded merchant -> latest category/account map."""
+    """Datalist names (the most used, listed A to Z) and a casefolded merchant -> latest
+    category/account map."""
     counts: dict[str, dict[str, int]] = {}
     for name, used in (
         Expense.objects.filter(household=home)
@@ -506,7 +507,10 @@ def merchant_memory(home):
     ranked = sorted(
         counts.items(), key=lambda item: (-sum(item[1].values()), min(item[1]), item[0])
     )[:MERCHANT_CAP]
-    names = [max(spellings, key=lambda n: (spellings[n], n)) for _, spellings in ranked]
+    names = sorted(
+        (max(spellings, key=lambda n: (spellings[n], n)) for _, spellings in ranked),
+        key=lambda name: (name.casefold(), name),
+    )
     wanted = {key for key, _ in ranked}
     latest: dict[str, dict[str, int]] = {}
     recent = (
@@ -1507,6 +1511,7 @@ def transaction_edit(request, kind, pk):
             "return_url": form_return_url(request, reverse("transactions")),
             "expense_split_formset": split_formset,
             "savings_formset": savings_source_formset,
+            "merchant_names": (merchant_memory(home)[0] if kind in {"expense", "refund"} else None),
         },
     )
 

@@ -248,16 +248,26 @@ def more_options_html(page):
     return page[start : page.index("</details>", start)], page[start : start + 40]
 
 
-def test_expense_form_tucks_four_fields_into_closed_more_options(world):
+def test_expense_form_tucks_three_fields_into_closed_more_options(world):
     page = world["client"].get(reverse("expense_add")).content.decode()
     inside, opening = more_options_html(page)
     assert " open" not in opening
-    for field in ("split_transaction", "is_essential_override", "bill", "bill_occurrence"):
+    for field in ("split_transaction", "is_essential_override", "bill_occurrence"):
         assert f'name="{field}"' in inside
     outside = page.replace(inside, "")
-    for field in ("amount", "date", "account", "category", "merchant", "notes"):
+    for field in ("amount", "date", "account", "category", "merchant", "bill", "notes"):
         assert f'name="{field}"' in outside
-    assert 'name="bill"' not in outside
+    # Paying a bill is a main choice: shown right after Merchant, never
+    # tucked away, with an empty choice that says what leaving it alone means.
+    assert 'name="bill"' not in inside
+    assert (
+        outside.index('name="merchant"')
+        < outside.index('name="bill"')
+        < outside.index('name="notes"')
+    )
+    assert ">Not a bill payment</option>" in outside
+    assert "Apply payment to bill (optional)" not in page
+    assert ">Nearest unpaid month</option>" in inside
 
 
 def post_expense(world, **extra):
